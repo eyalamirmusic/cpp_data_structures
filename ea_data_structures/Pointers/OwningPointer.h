@@ -124,7 +124,6 @@ public:
     }
 
 private:
-
     T* object = nullptr;
 };
 } // namespace EA
