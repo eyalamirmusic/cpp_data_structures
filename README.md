@@ -46,6 +46,9 @@ Allows copying a std::atomic
 ``CircularBuffer<T>``
 Encapsulates the basic Circular Buffer sometimes needed for delay effects, etc
 
+``SmallVector<T, Size>``
+A vector with a custom allocator, allows a preallocated stack size to be used before any heap access happens.
+
 And many others...
 
 More documentations, examples, unit tests, coming soon...
