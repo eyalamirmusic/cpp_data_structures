@@ -42,7 +42,7 @@ struct Allocator : Base
         if (n <= MaxSize)
         {
             isSmallBuffer = true;
-            return reinterpret_cast<T*>(&buffer[n - 1]);
+            return reinterpret_cast<T*>(&buffer[0]);
         }
 
         isSmallBuffer = false;

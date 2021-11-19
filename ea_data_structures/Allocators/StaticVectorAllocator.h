@@ -27,10 +27,10 @@ struct Allocator
     T* allocate(size_t n)
     {
         if (n <= MaxSize)
-            return reinterpret_cast<T*>(&buffer[n - 1]);
+            return reinterpret_cast<T*>(&buffer[0]);
 
-        assert(false); //You can't allocate more than pre-specified size
-        return reinterpret_cast<T*>(&buffer[MaxSize - 1]);
+        //You can't allocate more than pre-specified size
+        throw std::bad_alloc();
     }
 
     void deallocate(void*, size_t) {}
