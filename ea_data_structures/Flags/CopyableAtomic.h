@@ -4,9 +4,21 @@
 
 namespace EA
 {
+struct AtomicBase
+{
+};
+
+template <typename T>
+constexpr bool isAtomic()
+{
+    return std::is_base_of_v<AtomicBase, T>;
+}
+
 //A simple wrapper around std::atomic, making sure to always be lock free
 template <typename T>
-struct Atomic : std::atomic<T>
+struct Atomic
+    : std::atomic<T>
+    , AtomicBase
 {
     using std::atomic<T>::atomic;
 
@@ -15,9 +27,14 @@ struct Atomic : std::atomic<T>
 
 //A copyable version of std::atomic/EA::Atomic
 template <class T>
-struct CopyableAtomic: Atomic<T>
+struct CopyableAtomic : Atomic<T>
 {
-    using Atomic<T>::Atomic;
+    CopyableAtomic() = default;
+
+    CopyableAtomic(const T& other)
+    {
+        this->store(other);
+    }
 
     CopyableAtomic(const CopyableAtomic<T>& other)
         : CopyableAtomic(other.load())

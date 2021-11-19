@@ -114,6 +114,6 @@ public:
     T* data() { return container.data(); }
 
 protected:
-    ContainerType container;
+    ContainerType container {};
 };
 } // namespace EA
