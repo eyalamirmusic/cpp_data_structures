@@ -31,10 +31,7 @@ struct CopyableAtomic : Atomic<T>
 {
     CopyableAtomic() = default;
 
-    CopyableAtomic(const T& other)
-    {
-        this->store(other);
-    }
+    CopyableAtomic(const T& other) { this->store(other); }
 
     CopyableAtomic(const CopyableAtomic<T>& other)
         : CopyableAtomic(other.load())
@@ -54,5 +51,22 @@ struct CopyableAtomic : Atomic<T>
     }
 
     operator T() const { return this->load(); }
+};
+
+
+//Another simple wrapper, mostly to create template specializations and/or
+//stop on breakpoints for debugging
+template <typename T>
+struct AtomicWrapper : AtomicBase
+{
+    AtomicWrapper(const T& initialValue = T())
+        : value(initialValue)
+    {
+    }
+
+    void store(const T& other) noexcept { value.store(other); }
+    T load() const { return value.load(); }
+
+    Atomic<T> value;
 };
 } // namespace EA

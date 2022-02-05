@@ -23,6 +23,7 @@ struct Allocator : Base
     Allocator() = default;
 
     Allocator(const Base& other) { isSmallBuffer = other.isSmallBuffer; }
+    Allocator(const Allocator& other) { isSmallBuffer = other.isSmallBuffer; }
     Allocator(Allocator&& other) noexcept { isSmallBuffer = other.isSmallBuffer; }
 
     Allocator& operator=(const Base& other)

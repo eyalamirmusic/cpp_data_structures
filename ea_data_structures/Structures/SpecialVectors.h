@@ -6,9 +6,4 @@
 
 namespace EA
 {
-template <typename T, size_t N>
-using SmallVector = Vector<T, Allocators::SmallVector::Allocator<T, N>>;
-
-template <typename T, size_t N>
-using StaticVector = Vector<T, Allocators::StaticVector::Allocator<T, N>>;
 }

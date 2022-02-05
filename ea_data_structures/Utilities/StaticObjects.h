@@ -17,6 +17,15 @@ T& getStaticObject(Args&&... args)
     return *object;
 }
 
+//Similar to getStaticObject, but using stack allocation
+//For situation where it's important.
+template <typename T, typename... Args>
+T& getStaticStackObject(Args&&... args)
+{
+    static T object(std::forward<Args>(args)...);
+    return object;
+}
+
 //Sometimes you just want the static object to call it's constructor for side
 //effects. This is a more explicit way to do that
 template <typename T, typename... Args>

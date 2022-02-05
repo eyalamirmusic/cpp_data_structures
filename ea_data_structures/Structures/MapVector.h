@@ -15,6 +15,7 @@ namespace EA
 template <typename KeyType, typename ValueType>
 struct MapVector
 {
+    using key_type = KeyType;
     using ElementType = MapUtils::Detail::KeyValuePair<KeyType, ValueType>;
     using ContainerType = Vector<ElementType>;
     using Iterator = typename ContainerType::Iterator;

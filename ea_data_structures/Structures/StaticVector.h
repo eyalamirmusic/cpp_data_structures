@@ -1,107 +1,99 @@
 #pragma once
 
-#include "SmallVector.h"
+#include "../ValueWrapper/Constructed.h"
 #include "Vector.h"
 
 namespace EA
 {
-template <typename T, int PreAllocatedSize>
-struct SmallVector: VectorBase
+template <typename T, int MaxSize>
+struct StaticVector: VectorBase
 {
+    using ContainerType = Array<RawStorage<T>, MaxSize>;
     using value_type = T;
     using Iterator = T*;
+    using ConstIterator = const T*;
 
-    SmallVector() = default;
-    SmallVector(std::initializer_list<T> list) { add(list); }
+    StaticVector() = default;
+    StaticVector(std::initializer_list<T> list) { add(list); }
 
-    bool empty() const noexcept { return size() == 0; }
-    int size() const noexcept
+    StaticVector(const StaticVector& other) { copyFrom(other); }
+
+    StaticVector& operator=(const StaticVector& other)
     {
-        if (isStatic())
-            return staticVec.size();
-
-        return dynamicVec.size();
+        copyFrom(other);
+        return *this;
     }
+
+    void copyFrom(const StaticVector& other)
+    {
+        clear();
+
+        for (auto& element: other)
+            add(element);
+    }
+
+    ~StaticVector()
+    {
+        for (int index = 0; index < currentSize; ++index)
+            container[index].destroy();
+    }
+
+    bool empty() const noexcept { return currentSize == 0; }
+    int size() const noexcept { return currentSize; }
 
     void insert(int position, const T& object)
     {
-        checkSwitch(1);
-
-        if (isStatic())
-            staticVec.insert(position, object);
-        else
-            dynamicVec.insert(position, object);
-    }
-
-    bool isStatic() const { return usingStatic; }
-
-    bool shouldSwitch(int sizeExtra)
-    {
-        if (isStatic())
-            return size() + sizeExtra > PreAllocatedSize;
-
-        return false;
-    }
-
-    void checkSwitch(int sizeExtra)
-    {
-        if (shouldSwitch(sizeExtra))
-            switchToDynamic(sizeExtra);
-    }
-
-    void switchToDynamic(int preReservedSize)
-    {
-        dynamicVec.reserve(preReservedSize);
-
-        for (auto& element: *this)
-            dynamicVec.create(std::move(element));
-
-        usingStatic = false;
-        staticVec.clear();
+        if (currentSize < MaxSize)
+        {
+            std::rotate(begin() + position, container.end() - 1, container.end());
+            container[position] = object;
+            ++currentSize;
+        }
     }
 
     T& back() { return get(getLastElementIndex()); }
     T& front() { return get(0); }
 
-    T& add(const T& elementToAdd) noexcept
+    T& add(const T& elementToAdd)
     {
-        checkSwitch(1);
+        if (currentSize < MaxSize)
+        {
+            container[currentSize].create(elementToAdd);
+            ++currentSize;
+        }
 
-        if (isStatic())
-            return staticVec.add(elementToAdd);
-
-        return dynamicVec.add(elementToAdd);
+        return back();
     }
 
     T& push_back(const T& elementToAdd) noexcept { return add(elementToAdd); }
 
     T& add(T&& elementToAdd) noexcept
     {
-        checkSwitch(1);
+        if (currentSize < MaxSize)
+        {
+            container[currentSize].create(elementToAdd);
+            ++currentSize;
+        }
 
-        if (isStatic())
-            return staticVec.add(elementToAdd);
-
-        return dynamicVec.add(elementToAdd);
+        return back();
     }
 
     void add(std::initializer_list<T> items) noexcept
     {
-        checkSwitch(size() + (int) items.size());
-
-        if (isStatic())
-            staticVec.add(items);
-        else
-            dynamicVec.add(items);
+        for (auto& item: items)
+            add(item);
     }
 
     template <typename... Args>
     T& create(Args&&... args)
     {
-        if (isStatic())
-            return staticVec.create(std::forward<Args>(args)...);
+        if (currentSize < MaxSize)
+        {
+            container[currentSize].create(std::forward<Args>(args)...);
+            ++currentSize;
+        }
 
-        return dynamicVec.create(std::forward<Args>(args)...);
+        return back();
     }
 
     template <typename... Args>
@@ -110,7 +102,7 @@ struct SmallVector: VectorBase
         return create(std::forward<Args>(args)...);
     }
 
-    inline T& get(int index) noexcept { return data()[index]; }
+    inline T& get(int index) noexcept { return *container[index]; }
     inline const T& operator[](int index) const noexcept { return get(index); }
 
     inline T& operator[](int index) noexcept { return get(index); }
@@ -118,74 +110,54 @@ struct SmallVector: VectorBase
 
     void clear() noexcept
     {
-        if (isStatic())
-            staticVec.clear();
-        else
-            dynamicVec.clear();
+        for (int index = 0; index < currentSize; ++index)
+            container[index].destroy();
+
+        currentSize = 0;
     }
 
-    inline T* begin() noexcept { return data(); }
-    inline T* end() noexcept { return data() + size(); }
+    Iterator begin() noexcept { return data(); }
+    Iterator end() noexcept { return data() + currentSize; }
 
-    inline const T* begin() const noexcept { return data(); }
-    inline const T* end() const noexcept { return data() + size(); }
-
-    inline const T* cbegin() const noexcept { return data(); }
-    inline const T* cend() const noexcept { return data() + size(); }
+    ConstIterator begin() const noexcept { return data(); }
+    ConstIterator end() const noexcept { return data() + currentSize; }
 
     template <typename A>
     bool contains(const A& element) const
     {
-        return VectorUtilities::contains(*this, element);
+        return VectorUtilities::contains(container, element);
     }
 
-    void copyFrom(const SmallVector& other)
-    {
-        usingStatic = other.usingStatic;
-
-        if (other.usingStatic)
-            staticVec = other.staticVec;
-        else
-            dynamicVec = other.dynamicVec;
-    }
-
-    void copyFrom(const SmallVector& other, int startIndex, int numItems)
-    {
-        auto targetSize = numItems - startIndex;
-        auto adjustedSize = std::min(targetSize, other.size());
-
-        reserveAtLeast(adjustedSize);
-        clear();
-
-        for (int index = startIndex; index < startIndex; ++index)
-            add(other[index]);
-    }
-
-    void copyFrom(const SmallVector& other, int numItems)
-    {
-        copyFrom(other, 0, numItems);
-    }
+    ContainerType& getVector() { return container; }
 
     bool addIfNotThere(const T& element)
     {
-        return VectorUtilities::addIfNotThere(*this, element);
+        return VectorUtilities::addIfNotThere(container, element);
     }
 
     template <typename A>
     void removeAllMatches(const A& element)
     {
-        VectorUtilities::removeAllMatches(*this, element);
+        VectorUtilities::removeAllMatches(container, element);
     }
 
     void resize(size_t numElements) { resize((int) numElements); }
     void resize(int numElements)
     {
-        checkSwitch(numElements);
+        numElements = std::min(MaxSize, numElements);
 
-        if (isStatic())
-            staticVec.resize(numElements);
-        else
-            dynamicVec.resize(numElements);
+        if (numElements < currentSize)
+        {
+            for (int index = getLastElementIndex(); index >= 0; --index)
+                container[index].destroy();
+        }
+        else if (numElements > currentSize)
+        {
+            for (int index = 0; index < numElements; ++index)
+                container[index].create();
+        }
+
+        currentSize = numElements;
     }
 
     template <typename FloatType>
@@ -225,12 +197,20 @@ struct SmallVector: VectorBase
     template <typename... Args>
     void resizeAndCreate(int numElements, Args&&... args)
     {
-        checkSwitch(numElements);
+        numElements = std::min(MaxSize, numElements);
 
-        if (isStatic())
-            staticVec.resizeAndCreate(numElements, std::forward<Args>(args)...);
-        else
-            dynamicVec.resizeAndCreate(numElements, std::forward<Args>(args)...);
+        if (numElements < currentSize)
+        {
+            for (int index = getLastElementIndex(); index >= 0; --index)
+                container[index].destroy();
+        }
+        else if (numElements > currentSize)
+        {
+            for (int index = 0; index < numElements; ++index)
+                container[index].create(std::forward<Args>(args)...);
+        }
+
+        currentSize = numElements;
     }
 
     template <typename A>
@@ -269,40 +249,34 @@ struct SmallVector: VectorBase
     template <typename A>
     void fillFrom(A& other)
     {
-        VectorUtilities::copyInto(other, *this);
+        VectorUtilities::copyInto(other, container);
     }
 
     void removeRange(int startRange, int endRange)
     {
-        erase(begin() + startRange, begin() + endRange);
+        getVector().erase(begin() + startRange, begin() + endRange);
     }
 
-    void erase(Iterator it) { removeAt(int(it - begin())); }
+    void erase(Iterator it) { removeAt(it - begin()); }
 
     void removeAt(int index)
     {
-        if (isStatic())
-            staticVec.removeAt(index);
-        else
-            dynamicVec.removeAt(index);
+        if (currentSize > 1 && index >= 0 && index < currentSize)
+        {
+            container[index].destroy();
+
+            if (getLastElementIndex() > index)
+                std::copy(
+                    begin() + index + 1, begin() + currentSize, begin() + index);
+
+            --currentSize;
+        }
     }
 
     template <typename Callable>
     bool eraseIf(Callable&& callable)
     {
-        bool erased = false;
-        auto last = getLastElementIndex();
-
-        for (int index = last; index >= 0; --index)
-        {
-            if (callable(get(index)))
-            {
-                removeAt(index);
-                erased = true;
-            }
-        }
-
-        return erased;
+        return VectorUtilities::eraseIf(container, callable);
     }
 
     void pop_back()
@@ -317,20 +291,20 @@ struct SmallVector: VectorBase
         return std::max(0, getLastElementIndex());
     }
 
-    SmallVector& sort(bool forward = true)
+    StaticVector& sort(bool forward = true)
     {
         VectorUtilities::sort(*this, forward);
         return *this;
     }
 
     template <typename Predicate>
-    SmallVector& sort(const Predicate& pred, bool reverse = false)
+    StaticVector& sort(const Predicate& pred, bool reverse = false)
     {
         VectorUtilities::sort(*this, pred, reverse);
         return *this;
     }
 
-    SmallVector& reverse()
+    StaticVector& reverse()
     {
         VectorUtilities::reverse(*this);
         return *this;
@@ -371,7 +345,7 @@ struct SmallVector: VectorBase
     }
 
     template <typename Predicate>
-    SmallVector& filterInPlace(Predicate&& predicate)
+    StaticVector& filterInPlace(Predicate&& predicate)
     {
         auto removed = std::remove_if(begin(), end(), predicate);
         erase(removed);
@@ -379,35 +353,21 @@ struct SmallVector: VectorBase
     }
 
     template <typename Predicate>
-    void copyFilteredTo(SmallVector& other, Predicate&& predicate) const
+    void copyFilteredTo(StaticVector& other, Predicate&& predicate) const
     {
         std::copy_if(begin(), end(), other.begin(), predicate);
     }
 
     template <typename Predicate>
-    void addFilteredTo(SmallVector& other, Predicate&& predicate) const
+    void addFilteredTo(StaticVector& other, Predicate&& predicate) const
     {
         std::copy_if(begin(), end(), std::back_inserter(other), predicate);
     }
 
-    const T* data() const
-    {
-        if (usingStatic)
-            return staticVec.data();
+    const T* data() const { return reinterpret_cast<const T*>(container.data()); }
+    T* data() { return reinterpret_cast<T*>(container.data()); }
 
-        return dynamicVec.data();
-    }
-
-    T* data()
-    {
-        if (usingStatic)
-            return staticVec.data();
-
-        return dynamicVec.data();
-    }
-
-    Vector<T> dynamicVec;
-    StaticVector<T, PreAllocatedSize> staticVec;
-    bool usingStatic = true;
+    int currentSize = 0;
+    ContainerType container;
 };
 } // namespace EA

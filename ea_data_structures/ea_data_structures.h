@@ -29,8 +29,11 @@ BEGIN_JUCE_MODULE_DECLARATION
 #include "Structures/BufferView.h"
 #include "Structures/Filtered.h"
 #include "Structures/SpecialVectors.h"
+#include "Structures/StaticVector.h"
+#include "Structures/SmallVector.h"
 
 #include "Flags/CopyableAtomic.h"
+#include "Flags/Bool.h"
 
 #include "ValueWrapper/Value.h"
 #include "ValueWrapper/Constructed.h"

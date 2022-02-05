@@ -23,6 +23,7 @@ public:
     using ContainerType = std::vector<T, Allocator>;
     using Iterator = typename ContainerType::iterator;
     using Const_Iterator = typename ContainerType::const_iterator;
+    using value_type = T;
 
     Vector() = default;
     Vector(const Vector& other)
@@ -359,6 +360,18 @@ public:
         auto removed = std::remove_if(begin(), end(), predicate);
         container.erase(removed);
         return *this;
+    }
+
+    template <typename Predicate>
+    void copyFilteredTo(Vector& other, Predicate&& predicate) const
+    {
+        std::copy_if(begin(), end(), other.begin(), predicate);
+    }
+
+    template <typename Predicate>
+    void addFilteredTo(Vector& other, Predicate&& predicate) const
+    {
+        std::copy_if(begin(), end(), std::back_inserter(other), predicate);
     }
 
     const T* data() const { return container.data(); }

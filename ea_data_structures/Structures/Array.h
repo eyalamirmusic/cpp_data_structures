@@ -10,7 +10,7 @@ template <typename T, int Size>
 class Array
 {
 public:
-    using ContainerType = std::array<T, Size>;
+    using ContainerType = std::array<T, (size_t)Size>;
     using Iterator = typename ContainerType::iterator;
     using Const_Iterator = typename ContainerType::const_iterator;
 
