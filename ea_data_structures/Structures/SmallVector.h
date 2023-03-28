@@ -98,6 +98,8 @@ struct SmallVector: VectorBase
     template <typename... Args>
     T& create(Args&&... args)
     {
+        checkSwitch(1);
+
         if (isStatic())
             return staticVec.create(std::forward<Args>(args)...);
 
