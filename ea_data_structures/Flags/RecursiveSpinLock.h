@@ -20,7 +20,7 @@ public:
         ++holders;
     }
 
-    void unlock()
+    void unlock() noexcept
     {
         --holders;
 
