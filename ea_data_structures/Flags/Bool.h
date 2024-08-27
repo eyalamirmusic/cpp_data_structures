@@ -21,7 +21,7 @@ struct Bool
         return *this;
     }
 
-    operator bool() { return value; }
+    operator bool() const { return value; }
     bool operator==(const Bool other) const { return value == other.value; }
     bool operator==(const bool other) const { return value == other; }
     bool operator!=(const Bool other) const { return value != other.value; }

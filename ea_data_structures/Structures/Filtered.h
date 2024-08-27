@@ -48,4 +48,4 @@ struct Filtered
     Vector<int> indexes;
 };
 
-} // namespace EA::Filtered
+} // namespace EA::Utilities

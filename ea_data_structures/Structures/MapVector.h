@@ -85,13 +85,11 @@ struct MapVector
 
     void removeAt(int index) { container.removeAt(index); }
 
-    template<typename Callable>
+    template <typename Callable>
     void eraseIf(Callable&& callable)
     {
         auto eraseFunc = [callable](const auto& pair)
-        {
-            return callable(pair.second);
-        };
+        { return callable(pair.second); };
 
         container.eraseIf(eraseFunc);
     }
@@ -119,16 +117,26 @@ struct MapVector
 
     const KeyType& getKey(int index) { return container[index].first; }
 
-    const KeyType* getKeyByValue(const ValueType& value)
+    template <typename Func>
+    const KeyType* getKeyBy(Func comparison) const
     {
         for (auto& element: container)
         {
-            if (element.second == value)
+            if (comparison(element.second))
                 return &element.first;
         }
 
         return nullptr;
     }
+
+    const KeyType* getKeyByValue(const ValueType& value) const
+    {
+        auto comparison = [&](const ValueType& v) { return value == v; };
+        return getKeyBy(comparison);
+    }
+
+    ValueType& back() { return container.back().second; }
+    const ValueType& back() const { return container.back().second; }
 
     const KeyType& getKey(const ValueType& value)
     {
@@ -144,6 +152,16 @@ struct MapVector
     ElementType& getPair(int index) { return container[index]; }
 
     int size() const { return container.size(); }
+
+    void sortByKey(bool forward = true)
+    {
+        auto pred = [](const auto& first, const auto& second)
+        { return first.first < second.first; };
+
+        container.sort(pred, forward);
+    }
+
+    void sortByValue(bool reverse = false) { container.sort(reverse); }
 
     bool empty() const { return container.empty(); }
 

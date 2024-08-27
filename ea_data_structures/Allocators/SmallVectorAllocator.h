@@ -50,7 +50,7 @@ struct Allocator : Base
         return Allocators::allocate<T>(n);
     }
 
-    void deallocate(void* p, size_t n)
+    static void deallocate(void* p, size_t n)
     {
         if (n > MaxSize)
             Allocators::deallocate<T>(p, n);

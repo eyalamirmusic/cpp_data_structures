@@ -7,23 +7,25 @@ struct BufferView
 {
     BufferView(T* bufferToUse, int sizeToUse)
         : buffer(bufferToUse)
-        , size(sizeToUse)
+        , bufSize(sizeToUse)
     {
     }
 
-    T* begin() const { return buffer; }
-    T* end() const { return buffer + size; }
+    int size() const noexcept { return bufSize; }
 
-    T& operator[](int index) { return buffer[index]; }
+    T* begin() const noexcept { return buffer; }
+    T* end() const noexcept { return buffer + bufSize; }
 
-    T* buffer;
-    int size;
+    T& operator[](int index) noexcept { return buffer[index]; }
+
+    T* buffer = nullptr;
+    int bufSize = 0;
 };
 
 template <typename T>
 struct TwoDimensionalBufferIterator
 {
-    TwoDimensionalBufferIterator(T** bufferToUse, int internalSizeToUse)
+    TwoDimensionalBufferIterator(T* const* bufferToUse, int internalSizeToUse)
         : buffer(bufferToUse)
         , internalSize(internalSizeToUse)
     {
@@ -45,7 +47,7 @@ struct TwoDimensionalBufferIterator
 
     bool operator==(const TwoDimensionalBufferIterator& other)
     {
-        return buffer == other.start;
+        return buffer == other.buffer;
     }
 
     bool operator!=(const TwoDimensionalBufferIterator& other)
@@ -53,14 +55,16 @@ struct TwoDimensionalBufferIterator
         return buffer != other.buffer;
     }
 
-    T** buffer;
+    T* const* buffer;
     int internalSize;
 };
 
 template <typename T>
 struct TwoDimensionalBufferView
 {
-    TwoDimensionalBufferView(T** bufferToUse, int sizeToUse, int internalSizeToUse)
+    TwoDimensionalBufferView(T* const* bufferToUse,
+                             int sizeToUse,
+                             int internalSizeToUse)
         : buffer(bufferToUse)
         , size(sizeToUse)
         , internalSize(internalSizeToUse)
@@ -73,14 +77,14 @@ struct TwoDimensionalBufferView
         return {buffer + size, internalSize};
     }
 
-    T** buffer;
+    T* const* buffer;
     int size;
     int internalSize;
 };
 
 template <typename T>
 TwoDimensionalBufferView<T>
-    getViewFor(T** container, int numChannels, int numSamples)
+    getViewFor(T* const* container, int numChannels, int numSamples)
 {
     return {container, numChannels, numSamples};
 }

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <tuple>
 
 namespace EA::Tuples
@@ -18,7 +20,7 @@ constexpr FuncType for_each(Tuple&& t, FuncType&& f)
         std::forward<Tuple>(t),
         std::forward<FuncType>(f),
         std::make_index_sequence<
-            std::tuple_size<std::remove_reference_t<Tuple>>::value> {});
+            std::tuple_size_v<std::remove_reference_t<Tuple>>> {});
 }
 
 template <typename Container, typename FuncType>
@@ -81,6 +83,6 @@ namespace MixedTypes
 template <class F, class... Args>
 void forEach(F&& f, Args&&... args)
 {
-    ((void) f(std::forward<Args>(args)),...);
+    ((void) f(std::forward<Args>(args)), ...);
 }
 } // namespace MixedTypes

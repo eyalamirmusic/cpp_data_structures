@@ -18,8 +18,19 @@ class OwningPointer
 public:
     OwningPointer() = default;
 
+    template <typename A>
+    OwningPointer(const OwningPointer<A>& other)
+    {
+        copy(other);
+    }
+
     OwningPointer(const OwningPointer& other) { copy(other); }
-    OwningPointer(OwningPointer&& other) noexcept { reset(other.release()); }
+
+    template <typename A>
+    OwningPointer(OwningPointer<A>&& other) noexcept
+    {
+        reset(other.release());
+    }
 
     OwningPointer(std::unique_ptr<T>&& other) noexcept { reset(other.release()); }
     OwningPointer(std::unique_ptr<T>& other) { reset(other.release()); }
@@ -52,6 +63,16 @@ public:
         return *this;
     }
 
+    template <typename A>
+    OwningPointer& operator=(const OwningPointer<A>& other)
+    {
+        if (&other == this)
+            return *this;
+
+        copy(other);
+        return *this;
+    }
+
     OwningPointer& operator=(const OwningPointer& other)
     {
         if (&other == this)
@@ -66,7 +87,8 @@ public:
         return *object < *other.object;
     }
 
-    void copy(const OwningPointer& other)
+    template <typename A>
+    void copy(const OwningPointer<A>& other)
     {
         if (other != nullptr)
             reset(other->clone());
@@ -74,7 +96,8 @@ public:
             reset();
     }
 
-    void reset(T* other = nullptr)
+    template <typename A = T>
+    void reset(A* other = nullptr)
     {
         delete object;
         object = other;
@@ -126,4 +149,12 @@ public:
 private:
     T* object = nullptr;
 };
+
+template <typename T, typename... Args>
+OwningPointer<T> makeOwned(Args&&... args)
+{
+    OwningPointer<T> result;
+    result.create(std::forward<Args>(args)...);
+    return result;
+}
 } // namespace EA

@@ -19,13 +19,17 @@ union RawStorage
     void destroy() { object.~T(); }
 
     T* get() { return &object; }
+    const T* get() const { return &object; }
+
     T* operator->() { return get(); }
     T& operator*() { return object; }
+
+    const T* operator->() const { return get(); }
+    const T& operator*() const { return object; }
 
     alignas(T) std::byte memory[sizeof(T)] {};
     T object;
 };
-
 
 template <typename T>
 class Constructed
@@ -72,7 +76,7 @@ public:
         else
         {
             if (active)
-                (*storage) = other.storage.storage.object;
+                *storage = other.storage.storage.object;
             else if (other.isValid())
                 create(other.storage.storage.object);
         }
@@ -96,7 +100,10 @@ public:
 
     operator T&() { return *storage; }
     T* operator->() { return storage.get(); }
+    const T* operator->() const { return storage.get(); }
+
     T& operator*() { return *storage; }
+    const T& operator*() const { return *storage; }
 
     T* get() { return storage.get(); }
 

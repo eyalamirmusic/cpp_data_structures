@@ -76,6 +76,23 @@ public:
         return canAdd;
     }
 
+    template <typename ObjectType = T, typename... Args>
+    ObjectType& insertNew(int position, Args&&... args)
+    {
+        auto& created = this->insertAt(position);
+        return *created.template create<ObjectType>(std::forward<Args>(args)...);
+    }
+
+    template <typename ObjectType = T, typename... Args>
+    void insertNewRange(int start, int numItems, Args&&... args)
+    {
+        while (numItems > 0)
+        {
+            insertNew<ObjectType>(start, std::forward<Args>(args)...);
+            --numItems;
+        }
+    }
+
     template <typename... Args>
     T& createNew(Args&&... args)
     {

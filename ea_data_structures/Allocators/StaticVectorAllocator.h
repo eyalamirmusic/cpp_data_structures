@@ -33,7 +33,7 @@ struct Allocator
         throw std::bad_alloc();
     }
 
-    void deallocate(void*, size_t) {}
+    static void deallocate(void*, size_t) {}
 
     bool operator==(const Allocator&) const { return false; }
 

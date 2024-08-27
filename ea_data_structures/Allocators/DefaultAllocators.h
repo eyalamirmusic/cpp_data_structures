@@ -5,7 +5,7 @@
 namespace EA::Allocators
 {
 template <typename T>
-inline std::allocator<T>& getDefaultAllocator()
+std::allocator<T>& getDefaultAllocator()
 {
     static std::allocator<T> alloc;
     return alloc;
@@ -22,5 +22,4 @@ constexpr void deallocate(void* p, size_t n)
 {
     getDefaultAllocator<T>().deallocate(static_cast<T*>(p), n);
 }
-}
-
+} // namespace EA::Allocators

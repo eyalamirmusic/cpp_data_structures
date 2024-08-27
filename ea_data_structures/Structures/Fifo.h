@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Array.h"
-#include <atomic>
+#include "../Flags/CopyableAtomic.h"
 
 namespace EA
 {
@@ -39,7 +39,10 @@ public:
         writePos.store(loc);
     }
 
-    T& pull()
+    //Fills the FIFO with values
+    void fill(const T& data) noexcept { array.fill(data); }
+
+    T& pull() noexcept
     {
         auto readPos = getReadLocation();
         currentReadPosition.store(readPos);
@@ -47,7 +50,7 @@ public:
     }
 
 private:
-    int getReadLocation()
+    int getReadLocation() noexcept
     {
         auto readPos = writePos.load() - 1;
 
@@ -57,7 +60,7 @@ private:
         return readPos;
     }
 
-    void getNextLocation(int& prevLocation)
+    static void getNextLocation(int& prevLocation)
     {
         prevLocation++;
 
@@ -65,8 +68,8 @@ private:
             prevLocation = 0;
     }
 
-    std::atomic<int> writePos {0};
-    std::atomic<int> currentReadPosition {-1};
+    Atomic<int> writePos {0};
+    Atomic<int> currentReadPosition {-1};
 
     Array<T, size> array;
 };

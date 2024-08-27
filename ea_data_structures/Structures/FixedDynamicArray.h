@@ -8,7 +8,7 @@ template <typename T>
 class FixedDynamicArray
 {
 public:
-    using Aligned = typename std::aligned_storage<sizeof(T), alignof(T)>::type;
+    using Aligned = std::aligned_storage_t<sizeof(T), alignof(T)>;
 
     template <typename... ARGS>
     explicit FixedDynamicArray(int sizeToUse, ARGS&&... args)
@@ -28,7 +28,7 @@ public:
         for (auto& element: *this)
             element.~T();
 
-        delete[](Aligned*) data();
+        delete[] (Aligned*) data();
     }
 
     T* begin() { return internalData; }
@@ -37,7 +37,8 @@ public:
     T* begin() const { return internalData; }
     T* end() const { return internalData + internalSize; }
 
-    T& operator[](int index) const { return internalData[(size_t) index]; }
+    T& get(int index) const noexcept { return internalData[(size_t) index]; }
+    T& operator[](int index) const noexcept { return get(index); }
 
     T* data() { return internalData; }
     int size() const { return internalSize; }

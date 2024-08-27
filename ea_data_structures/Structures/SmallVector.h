@@ -6,7 +6,7 @@
 namespace EA
 {
 template <typename T, int PreAllocatedSize>
-struct SmallVector: VectorBase
+struct SmallVector : VectorBase
 {
     using value_type = T;
     using Iterator = T*;
@@ -35,7 +35,7 @@ struct SmallVector: VectorBase
 
     bool isStatic() const { return usingStatic; }
 
-    bool shouldSwitch(int sizeExtra)
+    bool shouldSwitch(int sizeExtra) const
     {
         if (isStatic())
             return size() + sizeExtra > PreAllocatedSize;
@@ -98,6 +98,8 @@ struct SmallVector: VectorBase
     template <typename... Args>
     T& create(Args&&... args)
     {
+        checkSwitch(size() + 1);
+
         if (isStatic())
             return staticVec.create(std::forward<Args>(args)...);
 
@@ -110,10 +112,10 @@ struct SmallVector: VectorBase
         return create(std::forward<Args>(args)...);
     }
 
-    inline T& get(int index) noexcept { return data()[index]; }
-    inline const T& operator[](int index) const noexcept { return get(index); }
+    T& get(int index) noexcept { return data()[index]; }
+    const T& operator[](int index) const noexcept { return get(index); }
 
-    inline T& operator[](int index) noexcept { return get(index); }
+    T& operator[](int index) noexcept { return get(index); }
     const T& get(int index) const noexcept { return data()[index]; }
 
     void clear() noexcept
@@ -124,19 +126,19 @@ struct SmallVector: VectorBase
             dynamicVec.clear();
     }
 
-    inline T* begin() noexcept { return data(); }
-    inline T* end() noexcept { return data() + size(); }
+    T* begin() noexcept { return data(); }
+    T* end() noexcept { return data() + size(); }
 
-    inline const T* begin() const noexcept { return data(); }
-    inline const T* end() const noexcept { return data() + size(); }
+    const T* begin() const noexcept { return data(); }
+    const T* end() const noexcept { return data() + size(); }
 
-    inline const T* cbegin() const noexcept { return data(); }
-    inline const T* cend() const noexcept { return data() + size(); }
+    const T* cbegin() const noexcept { return data(); }
+    const T* cend() const noexcept { return data() + size(); }
 
     template <typename A>
     bool contains(const A& element) const
     {
-        return VectorUtilities::contains(*this, element);
+        return Vectors::contains(*this, element);
     }
 
     void copyFrom(const SmallVector& other)
@@ -168,13 +170,13 @@ struct SmallVector: VectorBase
 
     bool addIfNotThere(const T& element)
     {
-        return VectorUtilities::addIfNotThere(*this, element);
+        return Vectors::addIfNotThere(*this, element);
     }
 
     template <typename A>
     void removeAllMatches(const A& element)
     {
-        VectorUtilities::removeAllMatches(*this, element);
+        Vectors::removeAllMatches(*this, element);
     }
 
     void resize(size_t numElements) { resize((int) numElements); }
@@ -269,12 +271,7 @@ struct SmallVector: VectorBase
     template <typename A>
     void fillFrom(A& other)
     {
-        VectorUtilities::copyInto(other, *this);
-    }
-
-    void removeRange(int startRange, int endRange)
-    {
-        erase(begin() + startRange, begin() + endRange);
+        Vectors::copyInto(other, *this);
     }
 
     void erase(Iterator it) { removeAt(int(it - begin())); }
@@ -319,20 +316,20 @@ struct SmallVector: VectorBase
 
     SmallVector& sort(bool forward = true)
     {
-        VectorUtilities::sort(*this, forward);
+        Vectors::sort(*this, forward);
         return *this;
     }
 
     template <typename Predicate>
     SmallVector& sort(const Predicate& pred, bool reverse = false)
     {
-        VectorUtilities::sort(*this, pred, reverse);
+        Vectors::sort(*this, pred, reverse);
         return *this;
     }
 
     SmallVector& reverse()
     {
-        VectorUtilities::reverse(*this);
+        Vectors::reverse(*this);
         return *this;
     }
 
@@ -344,7 +341,7 @@ struct SmallVector: VectorBase
     template <typename ObjectType>
     int getIndexOf(const ObjectType& element) const
     {
-        return VectorUtilities::getIndexOf(*this, element);
+        return Vectors::getIndexOf(*this, element);
     }
 
     template <typename ObjectType>
@@ -361,20 +358,19 @@ struct SmallVector: VectorBase
     template <typename Func>
     auto transform(Func&& func) const
     {
-        return VectorUtilities::transform(*this, std::forward<Func>(func));
+        return Vectors::transform(*this, std::forward<Func>(func));
     }
 
     template <typename Predicate>
     auto filter(Predicate&& predicate) const
     {
-        return VectorUtilities::filter(*this, std::forward<Predicate>(predicate));
+        return Vectors::filter(*this, std::forward<Predicate>(predicate));
     }
 
     template <typename Predicate>
     SmallVector& filterInPlace(Predicate&& predicate)
     {
-        auto removed = std::remove_if(begin(), end(), predicate);
-        erase(removed);
+        eraseIf(predicate);
         return *this;
     }
 

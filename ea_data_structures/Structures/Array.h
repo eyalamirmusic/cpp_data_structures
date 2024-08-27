@@ -10,7 +10,9 @@ template <typename T, int Size>
 class Array
 {
 public:
-    using ContainerType = std::array<T, (size_t)Size>;
+    using value_type = T;
+    using size_type = int;
+    using ContainerType = std::array<T, (size_t) Size>;
     using Iterator = typename ContainerType::iterator;
     using Const_Iterator = typename ContainerType::const_iterator;
 
@@ -42,36 +44,36 @@ public:
 
     bool empty() const noexcept { return container.empty(); }
 
-    int size() const noexcept { return (int) container.size(); }
+    static constexpr int size() noexcept { return Size; }
 
     T& back() { return container.back(); }
     T& front() { return container.front(); }
 
-    inline T& operator[](int index) noexcept { return container[(size_t) index]; }
-    inline const T& operator[](int index) const noexcept
+    T& operator[](int index) noexcept { return container[(size_t) index]; }
+    const T& operator[](int index) const noexcept
     {
         return container[(size_t) index];
     }
     T& get(int index) { return container[(size_t) index]; }
     const T& get(int index) const { return container[(size_t) index]; }
 
-    inline Iterator begin() noexcept { return container.begin(); }
-    inline Iterator end() noexcept { return container.end(); }
+    Iterator begin() noexcept { return container.begin(); }
+    Iterator end() noexcept { return container.end(); }
 
-    inline Const_Iterator begin() const noexcept { return container.begin(); }
-    inline Const_Iterator end() const noexcept { return container.end(); }
+    Const_Iterator begin() const noexcept { return container.begin(); }
+    Const_Iterator end() const noexcept { return container.end(); }
 
     Const_Iterator cbegin() const { return container.cbegin(); }
     Const_Iterator cend() const { return container.cend(); }
 
     bool contains(const T& element) const
     {
-        return VectorUtilities::contains(container, element);
+        return Vectors::contains(container, element);
     }
 
     ContainerType& getArray() { return container; }
     void copyFrom(ContainerType& other) { container = other; }
-    void copyFrom(Array<T, Size>& other) { container = other.getArray(); }
+    void copyFrom(Array& other) { container = other.getArray(); }
 
     template <typename A>
     void mixFrom(A& other)
@@ -89,16 +91,17 @@ public:
     template <typename A>
     void fillFrom(A& other)
     {
-        VectorUtilities::copyInto(other, container);
+        Vectors::copyInto(other, container);
     }
 
-    int getLastElementIndex() { return size() - 1; }
+    int getLastElementIndex() const { return size() - 1; }
 
     void sort() { std::sort(begin(), end()); }
 
-    int getIndexOf(const T& element) const
+    template<typename A>
+    int getIndexOf(const A& element) const
     {
-        return VectorUtilities::getIndexOf(container, element);
+        return Vectors::getIndexOf(container, element);
     }
 
     template <typename Predicate>

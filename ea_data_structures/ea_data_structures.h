@@ -15,6 +15,11 @@ BEGIN_JUCE_MODULE_DECLARATION
 #endif
 
 #include "Pointers/CallbackFunc.h"
+#include "Pointers/Cloneable.h"
+#include "Pointers/Any.h"
+#include "Pointers/Ref.h"
+#include "Pointers/RefOrOwn.h"
+#include "Pointers/DynamicFunc.h"
 
 #include "Utilities/TupleUtilities.h"
 #include "Utilities/StaticObjects.h"
@@ -31,9 +36,14 @@ BEGIN_JUCE_MODULE_DECLARATION
 #include "Structures/SpecialVectors.h"
 #include "Structures/StaticVector.h"
 #include "Structures/SmallVector.h"
+#include "Structures/MultiVector.h"
+#include "Structures/CopyOnWrite.h"
 
-#include "Flags/CopyableAtomic.h"
-#include "Flags/Bool.h"
+#include "Flags/Locks.h"
+#include "Flags/RecursiveSpinLock.h"
 
 #include "ValueWrapper/Value.h"
 #include "ValueWrapper/Constructed.h"
+
+#include "Allocators/PMR.h"
+#include "Allocators/MultiPoolAllocator.h"

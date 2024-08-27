@@ -10,13 +10,7 @@ class CloneableInterface
 {
 public:
     virtual ~CloneableInterface() = default;
-    virtual Base* clone() const
-    {
-        assert(false);
-        //You must implement this function to copy this class in a polymorphic way
-
-        return nullptr;
-    }
+    virtual Base* clone() const = 0;
 };
 
 //A templated implementation of the clone method you can derive from

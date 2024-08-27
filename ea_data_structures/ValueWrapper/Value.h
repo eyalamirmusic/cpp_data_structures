@@ -1,5 +1,7 @@
 #pragma once
 
+#include <limits>
+
 namespace EA
 {
 template <typename T>

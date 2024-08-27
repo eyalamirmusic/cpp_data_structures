@@ -22,7 +22,9 @@ struct Atomic
 {
     using std::atomic<T>::atomic;
 
-    Atomics::Validator<T> validator;
+    using std::atomic<T>::operator=;
+
+    static Atomics::Validator<T> validator;
 };
 
 //A copyable version of std::atomic/EA::Atomic
@@ -33,7 +35,7 @@ struct CopyableAtomic : Atomic<T>
 
     CopyableAtomic(const T& other) { this->store(other); }
 
-    CopyableAtomic(const CopyableAtomic<T>& other)
+    CopyableAtomic(const CopyableAtomic& other)
         : CopyableAtomic(other.load())
     {
     }
@@ -53,7 +55,6 @@ struct CopyableAtomic : Atomic<T>
     operator T() const { return this->load(); }
 };
 
-
 //Another simple wrapper, mostly to create template specializations and/or
 //stop on breakpoints for debugging
 template <typename T>
@@ -68,5 +69,13 @@ struct AtomicWrapper : AtomicBase
     T load() const { return value.load(); }
 
     Atomic<T> value;
+};
+
+struct AtomicFlag
+{
+    int load() const noexcept { return flag.load(); }
+    void update() noexcept { ++flag; }
+
+    Atomic<int> flag {0};
 };
 } // namespace EA

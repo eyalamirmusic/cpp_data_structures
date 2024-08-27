@@ -6,7 +6,7 @@
 namespace EA
 {
 template <typename T, int MaxSize>
-struct StaticVector: VectorBase
+struct StaticVector : VectorBase
 {
     using ContainerType = Array<RawStorage<T>, MaxSize>;
     using value_type = T;
@@ -102,10 +102,10 @@ struct StaticVector: VectorBase
         return create(std::forward<Args>(args)...);
     }
 
-    inline T& get(int index) noexcept { return *container[index]; }
-    inline const T& operator[](int index) const noexcept { return get(index); }
+    T& get(int index) noexcept { return *container[index]; }
+    const T& operator[](int index) const noexcept { return get(index); }
 
-    inline T& operator[](int index) noexcept { return get(index); }
+    T& operator[](int index) noexcept { return get(index); }
     const T& get(int index) const noexcept { return data()[index]; }
 
     void clear() noexcept
@@ -125,20 +125,37 @@ struct StaticVector: VectorBase
     template <typename A>
     bool contains(const A& element) const
     {
-        return VectorUtilities::contains(container, element);
+        for (int index = 0; index < size(); ++index)
+        {
+            if (get(index) == element)
+                return true;
+        }
+
+        return  false;
     }
 
     ContainerType& getVector() { return container; }
 
     bool addIfNotThere(const T& element)
     {
-        return VectorUtilities::addIfNotThere(container, element);
+        return Vectors::addIfNotThere(*this, element);
     }
 
     template <typename A>
-    void removeAllMatches(const A& element)
+    int removeAllMatches(const A& element)
     {
-        VectorUtilities::removeAllMatches(container, element);
+        int removedElements = 0;
+
+        for (int index = getLastElementIndex(); index >= 0; --index)
+        {
+            if (get(index) == element)
+            {
+                ++removedElements;
+                removeAt(index);
+            }
+        }
+
+        return removedElements;
     }
 
     void resize(size_t numElements) { resize((int) numElements); }
@@ -249,7 +266,7 @@ struct StaticVector: VectorBase
     template <typename A>
     void fillFrom(A& other)
     {
-        VectorUtilities::copyInto(other, container);
+        Vectors::copyInto(other, container);
     }
 
     void removeRange(int startRange, int endRange)
@@ -261,13 +278,18 @@ struct StaticVector: VectorBase
 
     void removeAt(int index)
     {
-        if (currentSize > 1 && index >= 0 && index < currentSize)
+        if (currentSize >= 1 && index >= 0 && index < currentSize)
         {
-            container[index].destroy();
+            for (int elementIndex = index; elementIndex < size(); ++elementIndex)
+            {
+                container[elementIndex].destroy();
 
-            if (getLastElementIndex() > index)
-                std::copy(
-                    begin() + index + 1, begin() + currentSize, begin() + index);
+                if (elementIndex < getLastElementIndex())
+                {
+                    container[elementIndex].create(
+                        std::move(container[elementIndex + 1].object));
+                }
+            }
 
             --currentSize;
         }
@@ -276,7 +298,19 @@ struct StaticVector: VectorBase
     template <typename Callable>
     bool eraseIf(Callable&& callable)
     {
-        return VectorUtilities::eraseIf(container, callable);
+        bool erased = false;
+        auto last = getLastElementIndex();
+
+        for (int index = last; index >= 0; --index)
+        {
+            if (callable(get(index)))
+            {
+                removeAt(index);
+                erased = true;
+            }
+        }
+
+        return erased;
     }
 
     void pop_back()
@@ -293,20 +327,20 @@ struct StaticVector: VectorBase
 
     StaticVector& sort(bool forward = true)
     {
-        VectorUtilities::sort(*this, forward);
+        Vectors::sort(*this, forward);
         return *this;
     }
 
     template <typename Predicate>
     StaticVector& sort(const Predicate& pred, bool reverse = false)
     {
-        VectorUtilities::sort(*this, pred, reverse);
+        Vectors::sort(*this, pred, reverse);
         return *this;
     }
 
     StaticVector& reverse()
     {
-        VectorUtilities::reverse(*this);
+        Vectors::reverse(*this);
         return *this;
     }
 
@@ -318,7 +352,7 @@ struct StaticVector: VectorBase
     template <typename ObjectType>
     int getIndexOf(const ObjectType& element) const
     {
-        return VectorUtilities::getIndexOf(*this, element);
+        return Vectors::getIndexOf(*this, element);
     }
 
     template <typename ObjectType>
@@ -335,20 +369,20 @@ struct StaticVector: VectorBase
     template <typename Func>
     auto transform(Func&& func) const
     {
-        return VectorUtilities::transform(*this, std::forward<Func>(func));
+        return Vectors::transform(*this, std::forward<Func>(func));
     }
 
     template <typename Predicate>
     auto filter(Predicate&& predicate) const
     {
-        return VectorUtilities::filter(*this, std::forward<Predicate>(predicate));
+        return Vectors::filter(*this, std::forward<Predicate>(predicate));
     }
 
     template <typename Predicate>
     StaticVector& filterInPlace(Predicate&& predicate)
     {
         auto removed = std::remove_if(begin(), end(), predicate);
-        erase(removed);
+        resize(removed - begin());
         return *this;
     }
 

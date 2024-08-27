@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <iterator>
+#include "SizeType.h"
 #include "../Utilities/VectorUtilities.h"
 
 namespace EA
@@ -21,6 +23,7 @@ class Vector : VectorBase
 {
 public:
     using ContainerType = std::vector<T, Allocator>;
+    using size_type = int;
     using Iterator = typename ContainerType::iterator;
     using Const_Iterator = typename ContainerType::const_iterator;
     using value_type = T;
@@ -48,7 +51,7 @@ public:
     explicit Vector(int numItems) { resize(numItems); }
 
     int capacity() const { return (int) container.capacity(); }
-    void reserve(int capacity) { container.reserve((size_t) capacity); }
+    void reserve(SizeType capacity) { container.reserve(capacity); }
 
     void reserveAtLeast(int capacityToUse)
     {
@@ -89,7 +92,28 @@ public:
         container.insert(begin() + position, object);
     }
 
+    template <typename... Args>
+    T& insertAt(int position, Args&&... args)
+    {
+        container.emplace(begin() + position, std::forward<Args>(args)...);
+
+        return get(position);
+    }
+
+    template <typename... Args>
+    void insertRange(int start, int numItems, Args&&... args)
+    {
+        while (numItems > 0)
+        {
+            insertAt(start, std::forward<Args>(args)...);
+            --numItems;
+        }
+    }
+
+    const T& back() const { return container.back(); }
     T& back() { return container.back(); }
+
+    const T& front() const { return container.front(); }
     T& front() { return container.front(); }
 
     T& add(const T& elementToAdd) noexcept
@@ -104,6 +128,12 @@ public:
     void erase(Iterator it)
     {
         container.erase(it);
+    }
+
+    template <typename Iterator>
+    void erase(Iterator first, Iterator last)
+    {
+        container.erase(first, last);
     }
 
     T& add(T&& elementToAdd) noexcept
@@ -131,27 +161,33 @@ public:
         return create(std::forward<Args>(args)...);
     }
 
-    inline T& get(int index) noexcept { return container[(size_t) index]; }
-    inline const T& operator[](int index) const noexcept { return get(index); }
+    T& get(SizeType index) noexcept { return container[index]; }
+    const T& operator[](SizeType index) const noexcept { return get(index); }
 
-    inline T& operator[](int index) noexcept { return get(index); }
-    const T& get(int index) const noexcept { return container[(size_t) index]; }
+    T& operator[](SizeType index) noexcept { return get(index); }
+    const T& get(SizeType index) const noexcept { return container[index]; }
 
     void clear() noexcept { container.clear(); }
 
-    inline Iterator begin() noexcept { return container.begin(); }
-    inline Iterator end() noexcept { return container.end(); }
+    auto rbegin() noexcept { return container.rbegin(); }
+    auto rend() noexcept { return container.rend(); }
 
-    inline Const_Iterator begin() const noexcept { return container.begin(); }
-    inline Const_Iterator end() const noexcept { return container.end(); }
+    auto rbegin() const noexcept { return container.rbegin(); }
+    auto rend() const noexcept { return container.rend(); }
 
-    Const_Iterator cbegin() const { return container.cbegin(); }
-    Const_Iterator cend() const { return container.cend(); }
+    auto begin() noexcept { return container.begin(); }
+    auto end() noexcept { return container.end(); }
+
+    auto begin() const noexcept { return container.begin(); }
+    auto end() const noexcept { return container.end(); }
+
+    auto cbegin() const { return container.cbegin(); }
+    auto cend() const { return container.cend(); }
 
     template <typename A>
     bool contains(const A& element) const
     {
-        return VectorUtilities::contains(container, element);
+        return Vectors::contains(container, element);
     }
 
     ContainerType& getVector() { return container; }
@@ -177,17 +213,29 @@ public:
 
     bool addIfNotThere(const T& element)
     {
-        return VectorUtilities::addIfNotThere(container, element);
+        return Vectors::addIfNotThere(container, element);
     }
 
     template <typename A>
-    void removeAllMatches(const A& element)
+    int removeAllMatches(const A& element)
     {
-        VectorUtilities::removeAllMatches(container, element);
+        return Vectors::removeAllMatches(container, element);
     }
 
-    void resize(size_t numElements) { container.resize(numElements); }
-    void resize(int numElements) { resize((size_t) numElements); }
+    template <typename InputIterator>
+    void assign(InputIterator first, InputIterator last)
+    {
+        container.assign(first, last);
+    }
+
+    void assign(SizeType n, const T& val) { container.assign(n, val); }
+
+    void resize(SizeType elements, const T& value)
+    {
+        container.resize(elements, value);
+    }
+
+    void resize(SizeType numElements) { container.resize(numElements); }
 
     template <typename FloatType>
     FloatType getIndexAsRelative(int index) const
@@ -195,7 +243,7 @@ public:
         if (index < 0 || index >= size())
             return FloatType(-1);
 
-        return Ranges::map(index,
+        return Ranges::map(FloatType(index),
                            FloatType(0),
                            (FloatType) getLastElementIndex(),
                            FloatType(0),
@@ -205,20 +253,44 @@ public:
     template <typename FloatType>
     int getRelativeIndex(FloatType proprtion) const
     {
-        auto index =
-            Ranges::map(proprtion, FloatType(0), (FloatType) getLastElementIndex());
+        return Ranges::getIndexProprtion(proprtion, size());
+    }
 
-        return (int) index;
+    template <typename Callable>
+    Vector<int> getIndexesMatching(Callable&& func) const
+    {
+        Vector<int> indexes;
+
+        for (int index = 0; index < size(); ++index)
+        {
+            if (func(get(index)))
+                indexes.add(index);
+        }
+
+        return indexes;
+    }
+
+    template <typename Callable>
+    void removeIndexesMatching(Callable&& func)
+    {
+        auto indexes = getIndexesMatching(func);
+        removeIndexes(indexes);
     }
 
     template <typename FloatType>
-    T& getRelative(FloatType proprtion) const
+    T& getRelative(FloatType proprtion)
     {
         return get(getRelativeIndex(proprtion));
     }
 
     template <typename FloatType>
-    FloatType getRelativeIndexOf(const T& item) const
+    const T& getRelative(FloatType proprtion) const
+    {
+        return get(getRelativeIndex(proprtion));
+    }
+
+    template <typename FloatType, typename A>
+    FloatType getRelativeIndexOf(const A& item) const
     {
         return getIndexAsRelative<FloatType>(getIndexOf(item));
     }
@@ -273,20 +345,30 @@ public:
     template <typename A>
     void fillFrom(A& other)
     {
-        VectorUtilities::copyInto(other, container);
+        Vectors::copyInto(other, container);
     }
 
     void removeRange(int startRange, int endRange)
     {
-        getVector().erase(begin() + startRange, begin() + endRange);
+        if (!empty() && endRange < size())
+            getVector().erase(begin() + startRange, begin() + endRange);
     }
 
-    void removeAt(int index) { VectorUtilities::removeAt(container, index); }
+    void removeAt(int index) { Vectors::removeAt(container, index); }
+
+    template <typename A>
+    void removeIndexes(A& indexes)
+    {
+        indexes.sort(false);
+
+        for (auto i: indexes)
+            removeAt(i);
+    }
 
     template <typename Callable>
     bool eraseIf(Callable&& callable)
     {
-        return VectorUtilities::eraseIf(container, callable);
+        return Vectors::eraseIf(container, callable);
     }
 
     void pop_back()
@@ -301,22 +383,45 @@ public:
         return std::max(0, getLastElementIndex());
     }
 
+    Vector& stableSort(bool forward = true)
+    {
+        Vectors::stableSort(container, forward);
+        return *this;
+    }
+
+    template <typename Func>
+    Vector& stableSort(Func&& func, bool forward = true)
+    {
+        Vectors::stableSort(container, func, forward);
+        return *this;
+    }
+
     Vector& sort(bool forward = true)
     {
-        VectorUtilities::sort(container, forward);
+        Vectors::sort(container, forward);
         return *this;
     }
 
     template <typename Predicate>
-    Vector& sort(const Predicate& pred, bool reverse = false)
+    Vector& sort(const Predicate& pred, bool forward = true)
     {
-        VectorUtilities::sort(container, pred, reverse);
+        Vectors::sort(container, pred, forward);
         return *this;
+    }
+
+    bool shift(int offset) noexcept
+    {
+        if (offset > 0)
+            std::rotate(rbegin(), rbegin() + offset, rend());
+        else if (offset < 0)
+            std::rotate(begin(), begin() - offset, end());
+
+        return offset != 0;
     }
 
     Vector& reverse()
     {
-        VectorUtilities::reverse(container);
+        Vectors::reverse(container);
         return *this;
     }
 
@@ -328,7 +433,18 @@ public:
     template <typename ObjectType>
     int getIndexOf(const ObjectType& element) const
     {
-        return VectorUtilities::getIndexOf(container, element);
+        return Vectors::getIndexOf(container, element);
+    }
+
+    template <typename ObjectType>
+    const T* find(const ObjectType& element) const
+    {
+        auto index = getIndexOf(element);
+
+        if (index >= 0)
+            return &get(index);
+
+        return nullptr;
     }
 
     template <typename ObjectType>
@@ -345,20 +461,20 @@ public:
     template <typename Func>
     auto transform(Func&& func) const
     {
-        return VectorUtilities::transform(*this, std::forward<Func>(func));
+        return Vectors::transform(*this, std::forward<Func>(func));
     }
 
     template <typename Predicate>
     auto filter(Predicate&& predicate) const
     {
-        return VectorUtilities::filter(*this, std::forward<Predicate>(predicate));
+        return Vectors::filter(*this, predicate);
     }
 
     template <typename Predicate>
     Vector& filterInPlace(Predicate&& predicate)
     {
         auto removed = std::remove_if(begin(), end(), predicate);
-        container.erase(removed);
+        container.erase(removed, end());
         return *this;
     }
 
