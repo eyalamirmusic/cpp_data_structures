@@ -28,10 +28,6 @@ public:
             id.store({});
     }
 
-    bool tryLock() noexcept { return tryLock(getCurrentID()); }
-
-    bool isLocked() const noexcept { return id.load() != ID(); }
-
 private:
     bool tryLock(ID current) noexcept
     {
