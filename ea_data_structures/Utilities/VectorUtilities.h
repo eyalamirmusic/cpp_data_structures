@@ -18,6 +18,7 @@ Vectors::addIfNotThere(myVector, element).
 #pragma once
 
 #include <algorithm>
+#include "../Utilities/VectorUtilities.h"
 
 namespace EA::Ranges
 {
