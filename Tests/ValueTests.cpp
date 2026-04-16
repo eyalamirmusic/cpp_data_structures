@@ -23,6 +23,13 @@ auto valueAssign = test("ValueWrapper.setValue") = []
     check(int(v) == 7);
 };
 
+auto valueAssignOperator = test("ValueWrapper.assigns_from_T_via_operator") = []
+{
+    auto v = EA::ValueWrapper<int>();
+    v = 7;
+    check(int(v) == 7);
+};
+
 auto valueCopy = test("ValueWrapper.copy_construction") = []
 {
     auto a = EA::ValueWrapper<int>(3);
@@ -67,6 +74,13 @@ auto valueTimesEquals = test("ValueWrapper.times_equals") = []
     auto v = EA::ValueWrapper<int>(4);
     v *= 3;
     check(int(v) == 12);
+};
+
+auto valueDivideEquals = test("ValueWrapper.divide_equals") = []
+{
+    auto v = EA::ValueWrapper<int>(20);
+    v /= 4;
+    check(int(v) == 5);
 };
 
 auto valueMinMax = test("ValueWrapper.min_and_max_limits") = []

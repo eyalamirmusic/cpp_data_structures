@@ -40,12 +40,6 @@ public:
         return *this;
     }
 
-    ValueWrapper& operator=(T newValue) noexcept
-    {
-        setValue(newValue);
-        return *this;
-    }
-
     ValueWrapper& operator+=(const T& newValue)
     {
         setValue(value + newValue);
@@ -60,7 +54,7 @@ public:
 
     ValueWrapper& operator/=(T newValue)
     {
-        setValue(newValue / newValue);
+        setValue(value / newValue);
         return *this;
     }
 
