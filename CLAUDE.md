@@ -15,6 +15,8 @@ add_subdirectory(path/to/cpp_data_structures)
 target_link_libraries(my_target PRIVATE ea_data_structures)
 ```
 
+The INTERFACE target declares `target_compile_features(... INTERFACE cxx_std_20)`, so consumers automatically get a C++20-or-higher requirement propagated onto anything that links it.
+
 ## Tests
 
 The `tests/` target and NanoTest fetch are **only enabled when this repo is the top-level CMake project** (`PROJECT_IS_TOP_LEVEL`). Consumers that `add_subdirectory` this repo as a dependency don't pay that cost.
@@ -27,7 +29,7 @@ ctest --test-dir build --output-on-failure
 
 Each `nano::test("Name")` registers as an individual CTest entry, so you can run one test with `ctest --test-dir build -R Vector.contains` or directly via `./build/tests/ea_data_structures_tests --test Vector.contains`. `--list-tests` on the executable lists everything it registered.
 
-Tests use the top-level project's `CMAKE_CXX_STANDARD 20` (NanoTest requires C++20, and parts of the library — e.g. the scoped `std::memory_order::release` in `RecursiveSpinLock.h` — do too). `_clang-format` and `.clang-tidy` at the repo root define the expected style and checks; run `clang-format` / `clang-tidy` against changed files before committing.
+The top-level build sets `CMAKE_CXX_STANDARD 20` because NanoTest's own static libs don't declare a standard themselves. `_clang-format` and `.clang-tidy` at the repo root define the expected style and checks; run `clang-format` / `clang-tidy` against changed files before committing.
 
 ## Code layout
 
@@ -47,4 +49,4 @@ Everything user-facing is re-exported from `ea_data_structures/ea_data_structure
 - **`int` size semantics, not `size_t`.** The `Vector` / `Array` wrappers deliberately expose `int`-based sizes and indices — do not "fix" this to `size_t`. Helper methods (`contains`, `eraseIf`, `addIfNotThere`, `sort`, …) are the whole point of these wrappers over raw STL.
 - **Real-time safety.** `SharedGUIData` / `GUIToRealTime`, `Fifo`, `CircularBuffer`, and `Flags/` types are designed for audio/real-time threads — preserve lock-free / allocation-free behavior when editing them.
 - **`Atomic<T>`** (in `Flags/`) static-asserts `T` is always lock-free; keep that guarantee intact.
-- **Formatting:** Allman braces, 4-space indent, 85-column limit, left-aligned pointers, `SortIncludes: false` (header order is intentional — notably in `ea_data_structures.h`). Note `_clang-format` still declares `Standard: c++17` even though the code uses C++20 features — safe to leave unless the formatter trips on something.
+- **Formatting:** Allman braces, 4-space indent, 85-column limit, left-aligned pointers, `SortIncludes: false` (header order is intentional — notably in `ea_data_structures.h`), `Standard: c++20`.

@@ -1,3 +1,16 @@
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+include(FetchContent)
+
+FetchContent_Declare(
+    NanoTest
+    GIT_REPOSITORY https://github.com/eyalamirmusic/NanoTest.git
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(NanoTest)
+
 nano_add_executable(ea_data_structures_tests
     SOURCES
         VectorTests.cpp
