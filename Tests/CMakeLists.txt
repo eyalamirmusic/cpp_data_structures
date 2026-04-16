@@ -13,26 +13,38 @@ FetchContent_MakeAvailable(NanoTest)
 
 nano_add_executable(ea_data_structures_tests
     SOURCES
-        VectorTests.cpp
-        ArrayTests.cpp
-        CircularBufferTests.cpp
-        MapVectorTests.cpp
-        ConstructedTests.cpp
-        RawStorageTests.cpp
-        PointersTests.cpp
-        FlagsTests.cpp
-        ValueTests.cpp
-        UtilitiesTests.cpp
-        StaticVectorTests.cpp
-        SmallVectorTests.cpp
-        OwnedVectorTests.cpp
-        BufferViewTests.cpp
-        FixedDynamicArrayTests.cpp
-        CopyOnWriteTests.cpp
-        MultiVectorTests.cpp
-        FifoTests.cpp
-        FilteredTests.cpp
-        TupleTests.cpp
+        Flags/BoolTests.cpp
+        Flags/CopyableAtomicTests.cpp
+        Flags/LocksTests.cpp
+        Flags/RecursiveSpinLockTests.cpp
+        Pointers/AnyTests.cpp
+        Pointers/CallbackFuncTests.cpp
+        Pointers/CloneableTests.cpp
+        Pointers/OwningPointerTests.cpp
+        Pointers/RefOrOwnTests.cpp
+        Pointers/RefTests.cpp
+        Structures/ArrayTests.cpp
+        Structures/BufferViewTests.cpp
+        Structures/CircularBufferTests.cpp
+        Structures/CopyOnWriteTests.cpp
+        Structures/FifoTests.cpp
+        Structures/FilteredTests.cpp
+        Structures/FixedDynamicArrayTests.cpp
+        Structures/MapVectorTests.cpp
+        Structures/MultiVectorTests.cpp
+        Structures/OwnedVectorTests.cpp
+        Structures/SharedGUIDataTests.cpp
+        Structures/SmallVectorTests.cpp
+        Structures/StaticVectorTests.cpp
+        Structures/VectorTests.cpp
+        Utilities/GenericUtilitiesTests.cpp
+        Utilities/MapUtilitiesTests.cpp
+        Utilities/StaticObjectsTests.cpp
+        Utilities/TupleUtilitiesTests.cpp
+        Utilities/VectorUtilitiesTests.cpp
+        ValueWrapper/ConstructedTests.cpp
+        ValueWrapper/RawStorageTests.cpp
+        ValueWrapper/ValueTests.cpp
 )
 
 target_link_libraries(ea_data_structures_tests PRIVATE ea_data_structures)

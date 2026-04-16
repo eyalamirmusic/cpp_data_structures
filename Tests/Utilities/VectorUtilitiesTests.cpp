@@ -1,44 +1,10 @@
 #include <NanoTest/NanoTest.h>
 #include <ea_data_structures/Structures/StaticVector.h>
 #include <ea_data_structures/Structures/Vector.h>
-#include <ea_data_structures/Utilities/GenericUtilities.h>
-#include <ea_data_structures/Utilities/MapUtilities.h>
-#include <ea_data_structures/Utilities/StaticObjects.h>
 #include <ea_data_structures/Utilities/VectorUtilities.h>
-#include <map>
 #include <vector>
 
 using namespace nano;
-
-auto equalsToAnyMatches = test("equalsToAny.returns_true_on_match") = []
-{
-    check(EA::equalsToAny(3, 1, 2, 3, 4));
-    check(EA::equalsToAny(1, 1));
-};
-
-auto equalsToAnyNoMatch = test("equalsToAny.returns_false_when_absent") = []
-{
-    check(!EA::equalsToAny(5, 1, 2, 3, 4));
-};
-
-auto equalsToAllUniform = test("equalsToAll.returns_true_when_all_match") = []
-{
-    check(EA::equalsToAll(3, 3, 3, 3));
-};
-
-auto equalsToAllMixed = test("equalsToAll.returns_false_when_any_differs") = []
-{
-    check(!EA::equalsToAll(3, 3, 4, 3));
-};
-
-auto toggleBoolFlip = test("toggleBool.flips_value") = []
-{
-    auto b = false;
-    EA::toggleBool(b);
-    check(b);
-    EA::toggleBool(b);
-    check(!b);
-};
 
 auto rangesLinearMap = test("Ranges.linearMap_midpoint") = []
 {
@@ -257,67 +223,4 @@ auto vectorsRemoveAllMatches = test("Vectors.removeAllMatches_counts") = []
     auto removed = EA::Vectors::removeAllMatches(v, target);
     check(removed == 3);
     check(v.size() == 2u);
-};
-
-auto mapUtilsContains = test("MapUtils.contains") = []
-{
-    auto m = std::map<int, int> {{1, 10}, {2, 20}};
-    check(EA::MapUtils::contains(m, 1));
-    check(!EA::MapUtils::contains(m, 99));
-};
-
-auto mapUtilsGet = test("MapUtils.get_returns_pointer_or_null") = []
-{
-    auto m = std::map<int, int> {{1, 10}};
-    auto* p = EA::MapUtils::get(m, 1);
-    check(p != nullptr);
-    check(*p == 10);
-    check(EA::MapUtils::get(m, 99) == nullptr);
-};
-
-auto mapUtilsGetDefault = test("MapUtils.get_with_default") = []
-{
-    auto m = std::map<int, int> {{1, 10}};
-    check(EA::MapUtils::get(m, 1, -1) == 10);
-    check(EA::MapUtils::get(m, 99, -1) == -1);
-};
-
-namespace
-{
-struct StaticThing
-{
-    int v = 5;
-};
-} // namespace
-
-auto staticObjectSameRef = test("getStaticObject.returns_same_reference") = []
-{
-    auto& a = EA::getStaticObject<StaticThing>();
-    auto& b = EA::getStaticObject<StaticThing>();
-    check(&a == &b);
-    check(a.v == 5);
-};
-
-auto staticStackObjectSameRef = test("getStaticStackObject.returns_same_ref") = []
-{
-    auto& a = EA::getStaticStackObject<StaticThing>();
-    auto& b = EA::getStaticStackObject<StaticThing>();
-    check(&a == &b);
-};
-
-auto updateMarkerEquals = test("UpdateMarker.new_markers_are_equal") = []
-{
-    auto a = EA::UpdateMarker();
-    auto b = EA::UpdateMarker();
-    check(a == b);
-};
-
-auto updateMarkerUpdateDiverges = test("UpdateMarker.update_diverges") = []
-{
-    auto a = EA::UpdateMarker();
-    auto b = EA::UpdateMarker();
-    a.update();
-    check(!(a == b));
-    b.update();
-    check(a == b);
 };
