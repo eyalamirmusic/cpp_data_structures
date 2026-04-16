@@ -53,3 +53,65 @@ auto mapVectorEmpty = test("MapVector.empty") = []
     map.clear();
     check(map.empty());
 };
+
+auto mapVectorEmplace = test("MapVector.emplace_constructs_value") = []
+{
+    auto map = EA::MapVector<int, int>();
+    auto& value = map.emplace(1, 42);
+    check(map.size() == 1);
+    check(value == 42);
+    check(*map.getValue(1) == 42);
+};
+
+auto mapVectorSortByKey = test("MapVector.sortByKey") = []
+{
+    auto map = EA::MapVector<int, int>();
+    map[3] = 30;
+    map[1] = 10;
+    map[2] = 20;
+    map.sortByKey();
+    check(map.getPair(0).first == 1);
+    check(map.getPair(1).first == 2);
+    check(map.getPair(2).first == 3);
+};
+
+auto mapVectorSortByValue = test("MapVector.sortByValue_default_is_descending") = []
+{
+    auto map = EA::MapVector<int, int>();
+    map[1] = 300;
+    map[2] = 100;
+    map[3] = 200;
+    map.sortByValue();
+    check(map.get(0) == 300);
+    check(map.get(1) == 200);
+    check(map.get(2) == 100);
+};
+
+auto mapVectorGetKeyByValue = test("MapVector.getKeyByValue") = []
+{
+    auto map = EA::MapVector<int, int>();
+    map[7] = 42;
+    map[8] = 99;
+    auto* key = map.getKeyByValue(42);
+    check(key != nullptr);
+    check(*key == 7);
+    check(map.getKeyByValue(12345) == nullptr);
+};
+
+auto mapVectorHasMatch = test("MapVector.hasMatch_on_value") = []
+{
+    auto map = EA::MapVector<int, int>();
+    map[1] = 10;
+    map[2] = 20;
+    check(map.hasMatch(10));
+    check(!map.hasMatch(999));
+};
+
+auto mapVectorReserve = test("MapVector.reserve_preserves_size") = []
+{
+    auto map = EA::MapVector<int, int>();
+    map.reserve(100);
+    check(map.empty());
+    map[1] = 1;
+    check(map.size() == 1);
+};

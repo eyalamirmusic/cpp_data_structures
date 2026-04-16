@@ -66,3 +66,91 @@ auto vectorFind = test("Vector.find_returns_pointer_or_null") = []
     check(*hit == 10);
     check(v.find(42) == nullptr);
 };
+
+auto vectorReverse = test("Vector.reverse") = []
+{
+    auto v = EA::Vector<int> {1, 2, 3};
+    v.reverse();
+    check(v[0] == 3);
+    check(v[1] == 2);
+    check(v[2] == 1);
+};
+
+auto vectorBackFront = test("Vector.back_and_front") = []
+{
+    auto v = EA::Vector<int> {10, 20, 30};
+    check(v.front() == 10);
+    check(v.back() == 30);
+};
+
+auto vectorPopBack = test("Vector.pop_back") = []
+{
+    auto v = EA::Vector<int> {1, 2, 3};
+    v.pop_back();
+    check(v.size() == 2);
+    check(v.back() == 2);
+};
+
+auto vectorRemoveAt = test("Vector.removeAt") = []
+{
+    auto v = EA::Vector<int> {10, 20, 30, 40};
+    v.removeAt(1);
+    check(v.size() == 3);
+    check(v[0] == 10);
+    check(v[1] == 30);
+    check(v[2] == 40);
+};
+
+auto vectorInsertAt = test("Vector.insertAt") = []
+{
+    auto v = EA::Vector<int> {1, 3, 4};
+    v.insertAt(1, 2);
+    check(v.size() == 4);
+    check(v[0] == 1);
+    check(v[1] == 2);
+    check(v[2] == 3);
+};
+
+auto vectorRemoveAllMatches = test("Vector.removeAllMatches") = []
+{
+    auto v = EA::Vector<int> {1, 2, 1, 3, 1};
+    auto removed = v.removeAllMatches(1);
+    check(removed == 3);
+    check(v.size() == 2);
+};
+
+auto vectorLastElementIndex = test("Vector.getLastElementIndex") = []
+{
+    auto v = EA::Vector<int> {1, 2, 3};
+    check(v.getLastElementIndex() == 2);
+    v.clear();
+    check(v.getLastElementIndex() == -1);
+    check(v.getLastValidElementIndex() == 0);
+};
+
+auto vectorFilterInPlace = test("Vector.filterInPlace_removes_matches") = []
+{
+    auto v = EA::Vector<int> {1, 2, 3, 4, 5};
+    v.filterInPlace([](int x) { return x % 2 == 0; });
+    check(v.size() == 3);
+    check(v[0] == 1);
+    check(v[1] == 3);
+    check(v[2] == 5);
+};
+
+auto vectorClear = test("Vector.clear") = []
+{
+    auto v = EA::Vector<int> {1, 2, 3};
+    v.clear();
+    check(v.empty());
+    check(v.size() == 0);
+};
+
+auto vectorEmplaceBack = test("Vector.emplace_back") = []
+{
+    auto v = EA::Vector<int>();
+    auto& ref = v.emplace_back(42);
+    check(v.size() == 1);
+    check(ref == 42);
+    check(&v[0] == &ref);
+};

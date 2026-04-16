@@ -18,6 +18,20 @@ nano_add_executable(ea_data_structures_tests
         CircularBufferTests.cpp
         MapVectorTests.cpp
         ConstructedTests.cpp
+        PointersTests.cpp
+        FlagsTests.cpp
+        ValueTests.cpp
+        UtilitiesTests.cpp
+        StaticVectorTests.cpp
+        SmallVectorTests.cpp
+        OwnedVectorTests.cpp
+        BufferViewTests.cpp
+        FixedDynamicArrayTests.cpp
+        CopyOnWriteTests.cpp
+        MultiVectorTests.cpp
+        FifoTests.cpp
+        FilteredTests.cpp
+        TupleTests.cpp
 )
 
 target_link_libraries(ea_data_structures_tests PRIVATE ea_data_structures)

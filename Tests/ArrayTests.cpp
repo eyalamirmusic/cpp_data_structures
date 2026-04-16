@@ -72,3 +72,23 @@ auto arrayInitializerListPartial =
     check(a[3] == 0);
     check(a[4] == 0);
 };
+
+auto arrayBackFront = test("Array.back_and_front") = []
+{
+    auto a = EA::Array<int, 3> {10, 20, 30};
+    check(a.front() == 10);
+    check(a.back() == 30);
+};
+
+auto arrayData = test("Array.data_points_to_first_element") = []
+{
+    auto a = EA::Array<int, 3> {1, 2, 3};
+    check(a.data()[0] == 1);
+    check(a.data()[2] == 3);
+};
+
+auto arrayLastElementIndex = test("Array.getLastElementIndex") = []
+{
+    auto a = EA::Array<int, 5>();
+    check(a.getLastElementIndex() == 4);
+};
