@@ -18,6 +18,7 @@ nano_add_executable(ea_data_structures_tests
         CircularBufferTests.cpp
         MapVectorTests.cpp
         ConstructedTests.cpp
+        RawStorageTests.cpp
         PointersTests.cpp
         FlagsTests.cpp
         ValueTests.cpp
