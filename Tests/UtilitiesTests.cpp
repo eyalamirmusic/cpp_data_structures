@@ -1,4 +1,6 @@
 #include <NanoTest/NanoTest.h>
+#include <ea_data_structures/Structures/StaticVector.h>
+#include <ea_data_structures/Structures/Vector.h>
 #include <ea_data_structures/Utilities/GenericUtilities.h>
 #include <ea_data_structures/Utilities/MapUtilities.h>
 #include <ea_data_structures/Utilities/StaticObjects.h>
@@ -82,6 +84,98 @@ auto vectorsGetIndexIfStandalone = test("Vectors.getIndexIf_finds_first_match") 
     auto v = std::vector<int> {1, 2, 3, 4};
     auto idx = EA::Vectors::getIndexIf(v, [](int x) { return x > 2; });
     check(idx == 2);
+};
+
+auto vectorsGetIndexOfComparison = test("Vectors.getIndexOfComparison") = []
+{
+    auto v = std::vector<int> {5, 10, 15, 20};
+    auto idx = EA::Vectors::getIndexOfComparison(
+        v, [](const auto& e) { return e == 15; });
+    check(idx == 2);
+    auto missing = EA::Vectors::getIndexOfComparison(
+        v, [](const auto& e) { return e == 999; });
+    check(missing == -1);
+};
+
+auto vectorsGetIndexOfReverse = test("Vectors.getIndexOfReverse") = []
+{
+    auto v = std::vector<int> {1, 2, 3};
+    check(EA::Vectors::getIndexOfReverse(v, 2) == 1);
+    check(EA::Vectors::getIndexOfReverse(v, 99) == -1);
+};
+
+auto vectorsStableSort = test("Vectors.stableSort_ascending_and_descending") = []
+{
+    auto v = std::vector<int> {3, 1, 4, 1, 5, 9, 2, 6};
+    EA::Vectors::stableSort(v);
+    check(v.front() == 1);
+    check(v.back() == 9);
+
+    EA::Vectors::stableSort(v, false);
+    check(v.front() == 9);
+    check(v.back() == 1);
+};
+
+auto vectorsStableSortComparator = test("Vectors.stableSort_with_comparator") = []
+{
+    auto v = std::vector<int> {3, 1, 2};
+    EA::Vectors::stableSort(v, [](int a, int b) { return a > b; });
+    check(v[0] == 3);
+    check(v[1] == 2);
+    check(v[2] == 1);
+};
+
+auto vectorsSortComparator = test("Vectors.sort_with_comparator") = []
+{
+    auto v = std::vector<int> {3, 1, 2};
+    EA::Vectors::sort(v, [](int a, int b) { return a > b; });
+    check(v[0] == 3);
+    check(v[1] == 2);
+    check(v[2] == 1);
+};
+
+auto vectorsCopyInto = test("Vectors.copyInto_resizes_and_copies") = []
+{
+    auto src = EA::Vector<int> {1, 2, 3};
+    auto dst = EA::Vector<int> {9, 9};
+    EA::Vectors::copyInto(src, dst);
+    check(dst.size() == 3);
+    check(dst[0] == 1);
+    check(dst[1] == 2);
+    check(dst[2] == 3);
+};
+
+auto vectorsTransform = test("Vectors.transform_maps_each_element") = []
+{
+    auto src = EA::StaticVector<int, 5> {1, 2, 3};
+    auto dst = EA::Vectors::transform(src, [](int x) { return x * 2; });
+    check(dst.size() == 3);
+    check(dst[0] == 2);
+    check(dst[1] == 4);
+    check(dst[2] == 6);
+};
+
+auto vectorsFilter = test("Vectors.filter_keeps_matches") = []
+{
+    auto v = std::vector<int> {1, 2, 3, 4, 5};
+    auto result = EA::Vectors::filter(v, [](int x) { return x % 2 == 0; });
+    check(result.size() == 2u);
+    check(result[0] == 2);
+    check(result[1] == 4);
+};
+
+auto vectorsFold = test("Vectors.fold_left_folds_elements") = []
+{
+    auto v = EA::Vector<int> {1, 2, 3, 4};
+    auto sum = EA::Vectors::fold(v, [](int a, int b) { return a + b; });
+    check(sum == 10);
+};
+
+auto vectorsFoldr = test("Vectors.foldr_right_folds_elements") = []
+{
+    auto v = EA::Vector<int> {1, 2, 3, 4};
+    auto sum = EA::Vectors::foldr(v, [](int a, int b) { return a + b; });
+    check(sum == 10);
 };
 
 auto vectorsEraseIfStandalone = test("Vectors.eraseIf_on_std_vector") = []

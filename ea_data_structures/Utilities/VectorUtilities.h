@@ -18,6 +18,9 @@ Vectors::addIfNotThere(myVector, element).
 #pragma once
 
 #include <algorithm>
+#include <cassert>
+#include <iterator>
+#include <ranges>
 
 namespace EA::Ranges
 {
@@ -112,8 +115,13 @@ int getIndexOfComparison(const T& container, Func&& comparisonFunc)
 template <typename T, typename A>
 int getIndexOf(const T& container, const A& element)
 {
-    return getIndexOfComparison(container,
-                                [&](const auto& e) { return e == element; });
+    auto it = std::ranges::find(container, element);
+
+    if (it == std::ranges::end(container))
+        return -1;
+
+    return static_cast<int>(
+        std::ranges::distance(std::ranges::begin(container), it));
 }
 
 template <typename T, typename A>
@@ -144,13 +152,13 @@ int getIndexIf(const ContainerType& container, F&& predicate)
 template <typename T>
 void reverse(T& container)
 {
-    std::reverse(container.begin(), container.end());
+    std::ranges::reverse(container);
 }
 
 template <typename T, typename Func>
 void stableSort(T& container, Func&& func, bool forward = true)
 {
-    std::stable_sort(container.begin(), container.end(), func);
+    std::stable_sort(container.begin(), container.end(), std::forward<Func>(func));
 
     if (!forward)
         reverse(container);
@@ -187,7 +195,8 @@ void sort(T& container, COMPARE compare, bool forward = true)
 template <typename T, typename A>
 bool contains(const T& container, const A& elementToCheck)
 {
-    return getIndexOf(container, elementToCheck) >= 0;
+    return std::ranges::find(container, elementToCheck)
+           != std::ranges::end(container);
 }
 
 // Gets a pointer to an element that can be compared to an element of this
@@ -230,8 +239,8 @@ template <typename Container, typename Callable>
 bool eraseIf(Container& container, Callable callable)
 {
     auto prevSize = container.size();
-    auto toRemove = std::remove_if(container.begin(), container.end(), callable);
-    container.erase(toRemove, container.end());
+    auto removed = std::ranges::remove_if(container, callable);
+    container.erase(removed.begin(), removed.end());
 
     return prevSize != container.size();
 }
@@ -295,9 +304,7 @@ template <typename T, typename A>
 void copyInto(T& source, A& target)
 {
     target.resize(source.size());
-
-    for (int index = 0; index < target.size(); ++index)
-        target[index] = source[index];
+    std::ranges::copy(source, std::ranges::begin(target));
 }
 
 /**
@@ -381,10 +388,9 @@ auto transform(const VectorType<ElemType, Sz>& container, Func&& f)
     VectorType<New_Elem_T, Sz> new_container;
     new_container.resize(container.size());
 
-    std::transform(container.begin(),
-                   container.end(),
-                   new_container.begin(),
-                   std::forward<Func>(f));
+    std::ranges::transform(container,
+                           std::ranges::begin(new_container),
+                           std::forward<Func>(f));
 
     return std::move(new_container);
 }
@@ -397,13 +403,9 @@ template <typename Container, typename Func>
 auto filter(const Container& container, Func&& predicate)
 {
     Container results;
-
-    for (auto& elem: container)
-    {
-        if (predicate(elem))
-            results.push_back(elem);
-    }
-
+    std::ranges::copy_if(container,
+                         std::back_inserter(results),
+                         std::forward<Func>(predicate));
     return results;
 }
 
@@ -413,7 +415,7 @@ auto filter(const Container& container, Func&& predicate)
 template <typename ContainerType, typename Func>
 auto fold(ContainerType&& container, Func func)
 {
-    jassert(container.size() > 0);
+    assert(container.size() > 0);
     auto value = *container.begin();
     for (int i = 1; i < container.size(); ++i)
     {
@@ -428,9 +430,9 @@ auto fold(ContainerType&& container, Func func)
 template <typename ContainerType, typename Func>
 auto foldr(ContainerType&& container, Func func)
 {
-    jassert(container.size() > 0);
+    assert(container.size() > 0);
     auto value = *(container.end() - 1);
-    for (int i = container.size() - 2; i > 0; --i)
+    for (int i = container.size() - 2; i >= 0; --i)
     {
         value = func(container[i], value);
     }
