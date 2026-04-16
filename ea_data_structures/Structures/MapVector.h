@@ -138,17 +138,6 @@ struct MapVector
     ValueType& back() { return container.back().second; }
     const ValueType& back() const { return container.back().second; }
 
-    const KeyType& getKey(const ValueType& value)
-    {
-        if (auto* key = getKeyByValue(value))
-            return *key;
-
-        assert(false); //Invalid value
-
-        static KeyType invalidKey;
-        return invalidKey;
-    }
-
     ElementType& getPair(int index) { return container[index]; }
 
     int size() const { return container.size(); }
@@ -161,7 +150,7 @@ struct MapVector
         container.sort(pred, forward);
     }
 
-    void sortByValue(bool reverse = false) { container.sort(reverse); }
+    void sortByValue(bool forward = true) { container.sort(forward); }
 
     bool empty() const { return container.empty(); }
 

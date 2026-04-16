@@ -70,18 +70,31 @@ auto mapVectorSortByKey = test("MapVector.sortByKey") = []
     map[1] = 10;
     map[2] = 20;
     map.sortByKey();
-    check(map.getPair(0).first == 1);
-    check(map.getPair(1).first == 2);
-    check(map.getPair(2).first == 3);
+    check(map.getKey(0) == 1);
+    check(map.getKey(1) == 2);
+    check(map.getKey(2) == 3);
 };
 
-auto mapVectorSortByValue = test("MapVector.sortByValue_default_is_descending") = []
+auto mapVectorSortByValue = test("MapVector.sortByValue_default_is_ascending") = []
 {
     auto map = EA::MapVector<int, int>();
     map[1] = 300;
     map[2] = 100;
     map[3] = 200;
     map.sortByValue();
+    check(map.get(0) == 100);
+    check(map.get(1) == 200);
+    check(map.get(2) == 300);
+};
+
+auto mapVectorSortByValueDescending =
+    test("MapVector.sortByValue_forward_false_is_descending") = []
+{
+    auto map = EA::MapVector<int, int>();
+    map[1] = 300;
+    map[2] = 100;
+    map[3] = 200;
+    map.sortByValue(false);
     check(map.get(0) == 300);
     check(map.get(1) == 200);
     check(map.get(2) == 100);
