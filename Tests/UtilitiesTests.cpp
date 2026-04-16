@@ -1,5 +1,8 @@
 #include <NanoTest/NanoTest.h>
-#include <ea_data_structures/ea_data_structures.h>
+#include <ea_data_structures/Utilities/GenericUtilities.h>
+#include <ea_data_structures/Utilities/MapUtilities.h>
+#include <ea_data_structures/Utilities/StaticObjects.h>
+#include <ea_data_structures/Utilities/VectorUtilities.h>
 #include <map>
 #include <vector>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SmallVector.h"
+#include "StaticVector.h"
 #include "Vector.h"
 
 namespace EA

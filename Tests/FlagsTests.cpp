@@ -1,5 +1,8 @@
 #include <NanoTest/NanoTest.h>
-#include <ea_data_structures/ea_data_structures.h>
+#include <ea_data_structures/Flags/Bool.h>
+#include <ea_data_structures/Flags/CopyableAtomic.h>
+#include <ea_data_structures/Flags/Locks.h>
+#include <ea_data_structures/Flags/RecursiveSpinLock.h>
 #include <thread>
 
 using namespace nano;

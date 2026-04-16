@@ -1,7 +1,12 @@
 #include <NanoTest/NanoTest.h>
-#include <ea_data_structures/ea_data_structures.h>
+#include <ea_data_structures/Pointers/Any.h>
+#include <ea_data_structures/Pointers/CallbackFunc.h>
+#include <ea_data_structures/Pointers/Cloneable.h>
 #include <ea_data_structures/Pointers/OwningPointer.h>
+#include <ea_data_structures/Pointers/Ref.h>
+#include <ea_data_structures/Pointers/RefOrOwn.h>
 #include <memory>
+#include <string>
 
 using namespace nano;
 

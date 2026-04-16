@@ -1,5 +1,6 @@
 #include <NanoTest/NanoTest.h>
-#include <ea_data_structures/ea_data_structures.h>
+#include <ea_data_structures/Structures/Fifo.h>
+#include <ea_data_structures/Structures/SharedGUIData.h>
 
 using namespace nano;
 

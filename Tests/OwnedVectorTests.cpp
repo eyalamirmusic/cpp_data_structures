@@ -1,5 +1,6 @@
 #include <NanoTest/NanoTest.h>
-#include <ea_data_structures/ea_data_structures.h>
+#include <ea_data_structures/Pointers/Cloneable.h>
+#include <ea_data_structures/Structures/OwnedVector.h>
 
 using namespace nano;
 

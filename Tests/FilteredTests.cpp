@@ -1,5 +1,6 @@
 #include <NanoTest/NanoTest.h>
-#include <ea_data_structures/ea_data_structures.h>
+#include <ea_data_structures/Structures/Filtered.h>
+#include <ea_data_structures/Structures/Vector.h>
 
 using namespace nano;
 

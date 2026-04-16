@@ -2,6 +2,7 @@
 
 //A wrapper around std::array that uses int instead of size_t, and adds some useful helper functions
 
+#include "../Utilities/VectorUtilities.h"
 #include <algorithm>
 #include <array>
 #include <ranges>

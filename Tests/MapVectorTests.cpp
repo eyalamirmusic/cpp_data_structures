@@ -1,5 +1,5 @@
 #include <NanoTest/NanoTest.h>
-#include <ea_data_structures/ea_data_structures.h>
+#include <ea_data_structures/Structures/MapVector.h>
 #include <string>
 
 using namespace nano;
