@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux GCC
+            os: ubuntu-latest
+            cc: gcc
+            cxx: g++
+
+          - name: Linux Clang
+            os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+
+          - name: macOS Universal (target 10.13)
+            os: macos-latest
+            cmake_args: -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+
+          - name: Windows MSVC
+            os: windows-latest
+            msvc_dev: true
+
+          - name: Windows Clang
+            os: windows-latest
+            msvc_dev: true
+            cc: clang-cl
+            cxx: clang-cl
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v5
+
+      - name: Set up MSVC environment
+        if: matrix.msvc_dev
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: cmake -S . -B build -G Ninja ${{ matrix.cmake_args }}
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
