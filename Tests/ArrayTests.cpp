@@ -51,3 +51,24 @@ auto arrayIndexOf = test("Array.getIndexOf") = []
     check(a.getIndexOf(200) == 1);
     check(a.getIndexOf(999) == -1);
 };
+
+auto arrayInitializerList = test("Array.initializer_list_construction") = []
+{
+    auto a = EA::Array<int, 4> {1, 2, 3, 4};
+    check(a.size() == 4);
+    check(a[0] == 1);
+    check(a[1] == 2);
+    check(a[2] == 3);
+    check(a[3] == 4);
+};
+
+auto arrayInitializerListPartial =
+    test("Array.initializer_list_partial_fills_rest") = []
+{
+    auto a = EA::Array<int, 5> {1, 2, 3};
+    check(a[0] == 1);
+    check(a[1] == 2);
+    check(a[2] == 3);
+    check(a[3] == 0);
+    check(a[4] == 0);
+};

@@ -2,7 +2,9 @@
 
 //A wrapper around std::array that uses int instead of size_t, and adds some useful helper functions
 
+#include <algorithm>
 #include <array>
+#include <ranges>
 
 namespace EA
 {
@@ -19,8 +21,8 @@ public:
     Array() = default;
 
     Array(std::initializer_list<T> list)
-        : container(list)
     {
+        std::ranges::copy(list | std::views::take(Size), container.begin());
     }
 
     Array(const Array& other) = default;
