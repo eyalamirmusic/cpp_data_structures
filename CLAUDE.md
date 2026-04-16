@@ -19,7 +19,7 @@ The INTERFACE target declares `target_compile_features(... INTERFACE cxx_std_20)
 
 ## Tests
 
-The `tests/` target and NanoTest fetch are **only enabled when this repo is the top-level CMake project** (`PROJECT_IS_TOP_LEVEL`). Consumers that `add_subdirectory` this repo as a dependency don't pay that cost.
+The `Tests/` target and NanoTest fetch are **only enabled when this repo is the top-level CMake project** (`PROJECT_IS_TOP_LEVEL`). Consumers that `add_subdirectory` this repo as a dependency don't pay that cost.
 
 ```bash
 cmake -S . -B build
@@ -27,7 +27,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-Each `nano::test("Name")` registers as an individual CTest entry, so you can run one test with `ctest --test-dir build -R Vector.contains` or directly via `./build/tests/ea_data_structures_tests --test Vector.contains`. `--list-tests` on the executable lists everything it registered.
+Each `nano::test("Name")` registers as an individual CTest entry, so you can run one test with `ctest --test-dir build -R Vector.contains` or directly via `./build/Tests/ea_data_structures_tests --test Vector.contains`. `--list-tests` on the executable lists everything it registered.
 
 The top-level build sets `CMAKE_CXX_STANDARD 20` because NanoTest's own static libs don't declare a standard themselves. `_clang-format` and `.clang-tidy` at the repo root define the expected style and checks; run `clang-format` / `clang-tidy` against changed files before committing.
 

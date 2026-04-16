@@ -8,5 +8,5 @@ target_compile_features(ea_data_structures INTERFACE cxx_std_20)
 
 if(PROJECT_IS_TOP_LEVEL)
     enable_testing()
-    add_subdirectory(tests)
+    add_subdirectory(Tests)
 endif()
