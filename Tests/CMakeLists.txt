@@ -49,6 +49,8 @@ nano_add_executable(ea_data_structures_tests
 
 target_link_libraries(ea_data_structures_tests PRIVATE ea_data_structures)
 
+target_include_directories(ea_data_structures_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
 target_compile_options(ea_data_structures_tests PRIVATE
     $<$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>:/W4 /WX>
     $<$<CXX_COMPILER_FRONTEND_VARIANT:GNU>:-Wall -Wextra -Wpedantic -Werror>

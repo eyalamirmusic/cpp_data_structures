@@ -74,7 +74,7 @@ struct StaticVector : VectorBase
     {
         if (currentSize < MaxSize)
         {
-            container[currentSize].create(elementToAdd);
+            container[currentSize].create(std::move(elementToAdd));
             ++currentSize;
         }
 
@@ -168,12 +168,12 @@ struct StaticVector : VectorBase
 
         if (numElements < currentSize)
         {
-            for (int index = getLastElementIndex(); index >= 0; --index)
+            for (int index = currentSize - 1; index >= numElements; --index)
                 container[index].destroy();
         }
         else if (numElements > currentSize)
         {
-            for (int index = 0; index < numElements; ++index)
+            for (int index = currentSize; index < numElements; ++index)
                 container[index].create();
         }
 
@@ -221,12 +221,12 @@ struct StaticVector : VectorBase
 
         if (numElements < currentSize)
         {
-            for (int index = getLastElementIndex(); index >= 0; --index)
+            for (int index = currentSize - 1; index >= numElements; --index)
                 container[index].destroy();
         }
         else if (numElements > currentSize)
         {
-            for (int index = 0; index < numElements; ++index)
+            for (int index = currentSize; index < numElements; ++index)
                 container[index].create(std::forward<Args>(args)...);
         }
 

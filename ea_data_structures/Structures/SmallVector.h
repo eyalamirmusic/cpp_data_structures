@@ -52,9 +52,9 @@ struct SmallVector : VectorBase
             switchToDynamic(sizeExtra);
     }
 
-    void switchToDynamic(int preReservedSize)
+    void switchToDynamic(int sizeExtra)
     {
-        dynamicVec.reserve(preReservedSize);
+        dynamicVec.reserve(size() + sizeExtra);
 
         for (auto& element: *this)
             dynamicVec.create(std::move(element));
@@ -83,14 +83,14 @@ struct SmallVector : VectorBase
         checkSwitch(1);
 
         if (isStatic())
-            return staticVec.add(elementToAdd);
+            return staticVec.add(std::move(elementToAdd));
 
-        return dynamicVec.add(elementToAdd);
+        return dynamicVec.add(std::move(elementToAdd));
     }
 
     void add(std::initializer_list<T> items) noexcept
     {
-        checkSwitch(size() + (int) items.size());
+        checkSwitch((int) items.size());
 
         if (isStatic())
             staticVec.add(items);
@@ -101,7 +101,7 @@ struct SmallVector : VectorBase
     template <typename... Args>
     T& create(Args&&... args)
     {
-        checkSwitch(size() + 1);
+        checkSwitch(1);
 
         if (isStatic())
             return staticVec.create(std::forward<Args>(args)...);
@@ -185,7 +185,7 @@ struct SmallVector : VectorBase
     void resize(size_t numElements) { resize((int) numElements); }
     void resize(int numElements)
     {
-        checkSwitch(numElements);
+        checkSwitch(numElements - size());
 
         if (isStatic())
             staticVec.resize(numElements);
@@ -230,7 +230,7 @@ struct SmallVector : VectorBase
     template <typename... Args>
     void resizeAndCreate(int numElements, Args&&... args)
     {
-        checkSwitch(numElements);
+        checkSwitch(numElements - size());
 
         if (isStatic())
             staticVec.resizeAndCreate(numElements, std::forward<Args>(args)...);
