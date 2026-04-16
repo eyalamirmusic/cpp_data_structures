@@ -4,6 +4,9 @@
 
 namespace EA::Allocators::StaticVector
 {
+//An STL-compatible allocator backed entirely by an in-struct buffer of
+//MaxSize elements: allocations above MaxSize throw std::bad_alloc.
+//Pair with an STL container to get a container that never touches the heap.
 template <typename T, size_t MaxSize>
 struct Allocator
 {

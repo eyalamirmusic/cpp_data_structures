@@ -4,6 +4,10 @@
 
 namespace EA::Utilities
 {
+//A filter-result view over a container: filter() records the indexes of
+//elements matching a predicate; forEach() then visits just those elements,
+//and removeAll() erases them from the underlying container. The container is
+//referenced, not copied — it must outlive this object.
 template <typename ContainerType>
 struct Filtered
 {

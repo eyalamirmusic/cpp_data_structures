@@ -53,6 +53,9 @@ void callIfTypeMatching(T& obj, FuncType&& callback)
     callForAllTypes<Args...>(func);
 }
 
+//A tuple-like container that exposes forEach() plus get-by-type and
+//get-by-index accessors. Intended for holding a heterogeneous set of
+//members whose types are known at compile time.
 template <typename... Args>
 struct Container
 {

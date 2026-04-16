@@ -4,6 +4,10 @@
 
 namespace EA
 {
+//Wraps a scalar T with default-initialization to T{} and the usual arithmetic
+//and comparison operators forwarded to the underlying value. Useful as a
+//building block when you want a default-initialized member or want to give a
+//scalar a distinct type via a `using Foo = ValueWrapper<int>;` alias.
 template <typename T>
 class ValueWrapper
 {

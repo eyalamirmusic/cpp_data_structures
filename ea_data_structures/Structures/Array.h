@@ -9,6 +9,9 @@
 
 namespace EA
 {
+//A std::array wrapper with int-based sizes/indexes and helpers (contains,
+//fill, sort, getIndexOf, …). Size is fixed at compile time via the Size
+//template parameter; storage is in-place, no heap allocation.
 template <typename T, int Size>
 class Array
 {

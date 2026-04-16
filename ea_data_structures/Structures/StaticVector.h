@@ -5,6 +5,9 @@
 
 namespace EA
 {
+//A vector-like container with a compile-time maximum capacity and no heap
+//allocation: elements live in-place inside an Array<RawStorage<T>, MaxSize>.
+//Pushing past MaxSize is a no-op. Shares most of Vector's helper API.
 template <typename T, int MaxSize>
 struct StaticVector : VectorBase
 {

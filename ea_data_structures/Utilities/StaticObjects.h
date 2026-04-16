@@ -34,6 +34,9 @@ void initStaticObject(Args&&... args)
     getStaticObject<T>(std::forward<Args>(args)...);
 }
 
+//A change token: copy one of these into a local snapshot, then call
+//update() on the original when something changes. Comparing the snapshot
+//against the current value tells readers whether work is needed.
 struct UpdateMarker
 {
     void update() { ++lastUpdate; }

@@ -5,6 +5,9 @@
 
 namespace EA
 {
+//A vector with small-buffer optimisation: elements live in a StaticVector of
+//size PreAllocatedSize until you exceed it, at which point storage switches
+//to a heap-backed Vector. isStatic() reports which mode is currently active.
 template <typename T, int PreAllocatedSize>
 struct SmallVector : VectorBase
 {

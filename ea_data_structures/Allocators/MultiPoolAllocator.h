@@ -63,6 +63,10 @@ struct ResourceContainer
     std::vector<SingleResource> resources;
 };
 
+//A pool of reusable heap blocks: allocate() hands out a free block (or
+//creates one if the free list is empty) and deallocate() returns it to the
+//free list without actually freeing it. Intended for contexts where you want
+//to avoid malloc/free calls in a hot path after an initial warm-up.
 class MemoryPool
 {
 public:
@@ -108,6 +112,8 @@ private:
     ResourceContainer used;
 };
 
+//A std::pmr::memory_resource adapter that routes allocations through a
+//MemoryPool. Lets you plug the pool into PMR-aware containers.
 class MemoryPoolResource final : public std::pmr::memory_resource
 {
 public:

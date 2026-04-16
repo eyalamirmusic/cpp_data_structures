@@ -5,6 +5,11 @@
 
 namespace EA
 {
+//An std::optional-like wrapper with explicit lifetime control: the object
+//lives inside in-place RawStorage<T> and is constructed/destroyed via
+//create()/destroy(). isValid() reports whether a T currently occupies the
+//storage. Useful when you want optional semantics without heap allocation
+//and with an explicit ctor call (including variadic emplacement).
 template <typename T>
 class Constructed
 {

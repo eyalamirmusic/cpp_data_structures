@@ -5,6 +5,10 @@
 namespace EA
 {
 
+//A value that copies cheaply (via shared_ptr) until someone assigns a new
+//value. Readers share the same underlying object; writing `cow = newValue`
+//allocates fresh storage instead of mutating in place, so other readers are
+//unaffected. Use for immutable snapshots passed between threads or scopes.
 template <typename T>
 class CopyOnWrite
 {

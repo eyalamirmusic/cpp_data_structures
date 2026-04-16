@@ -4,6 +4,9 @@
 
 namespace EA
 {
+//A pointer-like handle that either references an externally-owned object or
+//owns one via std::shared_ptr. Switches between modes via set()/create(); use
+//createIfNeeded() when you want to lazily take ownership only if empty.
 template <typename T>
 struct RefOrOwn
 {

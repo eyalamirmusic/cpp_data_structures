@@ -2,6 +2,9 @@
 
 namespace EA
 {
+//A non-owning view over a contiguous buffer of T, carrying just a pointer and
+//a size. Similar to std::span but with int-based size semantics matching the
+//rest of this library.
 template <typename T>
 struct BufferView
 {
@@ -59,6 +62,9 @@ struct TwoDimensionalBufferIterator
     int internalSize;
 };
 
+//A view over a 2D buffer represented as `T* const*` (an array of row/channel
+//pointers) plus the number of rows and the row length. Iterating yields a
+//BufferView per row — intended for accessing multichannel audio buffers.
 template <typename T>
 struct TwoDimensionalBufferView
 {

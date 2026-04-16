@@ -8,6 +8,9 @@
 
 namespace EA::Locks
 {
+//A boolean test-and-set flag backed by std::atomic<bool>. Used as the
+//primitive behind PrimitiveSpinLock; distinct from EA::AtomicFlag in
+//CopyableAtomic.h, which is a monotonic update counter.
 class AtomicFlag
 {
 public:
@@ -36,6 +39,8 @@ private:
     AtomicFlag locked;
 };
 
+//RAII guard for any lock with lock()/unlock() members (e.g. PrimitiveSpinLock
+//or RecursiveSpinLock). Acquires on construction, releases on destruction.
 template<typename LockType>
 class ScopedSpinLock
 {

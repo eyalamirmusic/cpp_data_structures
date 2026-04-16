@@ -18,6 +18,10 @@ constexpr bool isVector()
     return std::is_base_of_v<VectorBase, T>;
 }
 
+//A std::vector wrapper with int-based indexing and sizes (instead of size_t)
+//plus a set of helpers (contains, addIfNotThere, eraseIf, sort, reverse,
+//transform, filter, getIndexOf, …) that are commonly needed in application
+//code. Element type, allocator, and iteration match std::vector semantics.
 template <typename T, typename Allocator = std::allocator<T>>
 class Vector : VectorBase
 {

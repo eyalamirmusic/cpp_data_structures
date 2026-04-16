@@ -7,6 +7,9 @@ namespace EA::PMR
 {
 using Resource = std::pmr::memory_resource;
 
+//Pairs a PMR-aware object T with the memory_resource it uses, so the resource
+//stays alive for as long as the object does and is carried along by copies.
+//Typical T is a std::pmr container; see the `Vector` alias below.
 template <typename T>
 struct Object
 {

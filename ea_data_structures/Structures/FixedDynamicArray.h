@@ -4,6 +4,9 @@
 
 namespace EA
 {
+//A heap-allocated array whose size is chosen at construction time and fixed
+//for the lifetime of the object. Like std::vector without resize(), or a
+//std::unique_ptr<T[]> that remembers its size and constructs each element.
 template <typename T>
 class FixedDynamicArray
 {

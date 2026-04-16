@@ -9,6 +9,10 @@ struct Base
     bool isSmallBuffer = false;
 };
 
+//A small-buffer-optimized STL-compatible allocator: requests for up to
+//MaxSize elements are satisfied from an in-struct buffer; anything larger
+//falls back to the default heap allocator. isSmallBuffer tracks which
+//strategy the current allocation used.
 template <typename T, size_t MaxSize>
 struct Allocator : Base
 {

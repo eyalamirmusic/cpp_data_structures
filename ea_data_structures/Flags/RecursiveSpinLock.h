@@ -5,6 +5,9 @@
 
 namespace EA::Locks
 {
+//A reentrant spinlock: the owning thread can lock() multiple times without
+//deadlocking (tracked via std::thread::id plus a hold count). Other threads
+//busy-wait until the owning thread has released every held level.
 class RecursiveSpinLock
 {
     using ID = std::thread::id;

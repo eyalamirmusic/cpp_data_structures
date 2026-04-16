@@ -73,6 +73,9 @@ private:
     GUIToRealTime<T, fifoSize> fifo;
 };
 
+//The counterpart to SharedWithRealTime for the opposite direction: the audio/
+//realtime thread push()es values, and the GUI thread polls updateFlag (a
+//monotonic counter) to know when a new value is available, then pull()s it.
 template <typename T, int FifoSize = 5>
 struct RealTimeToGUI
 {

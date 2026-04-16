@@ -24,6 +24,10 @@ struct Object
 };
 
 } // namespace AnyDetail
+
+//A type-erased owner for objects of any class type. create<T>(args...) stores a
+//T and returns a T*; get<T>() returns the stored pointer as T* (or nullptr if
+//T is not the stored type). Object destruction runs through a virtual base.
 struct Any
 {
     template <typename T, typename... Args>

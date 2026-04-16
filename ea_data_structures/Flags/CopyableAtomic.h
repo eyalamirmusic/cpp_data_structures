@@ -71,6 +71,10 @@ struct AtomicWrapper : AtomicBase
     Atomic<T> value;
 };
 
+//A monotonically-incrementing atomic counter used to signal that something
+//has changed: update() bumps the counter, readers compare load() to a value
+//they saved previously. Distinct from Locks::AtomicFlag, which is a boolean
+//test-and-set flag for implementing spinlocks.
 struct AtomicFlag
 {
     int load() const noexcept { return flag.load(); }

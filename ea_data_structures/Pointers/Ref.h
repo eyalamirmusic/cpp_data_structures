@@ -4,6 +4,9 @@
 
 namespace EA
 {
+//A non-owning pointer wrapper. Constructible from a reference, a raw pointer,
+//or an OwningPointer, and implicitly decays back to T& or T* at the point of
+//use. Useful for passing objects whose ownership lives elsewhere.
 template <typename T>
 class Ref
 {
