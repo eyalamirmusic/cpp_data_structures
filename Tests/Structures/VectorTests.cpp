@@ -155,3 +155,45 @@ auto vectorEmplaceBack = test("Vector.emplace_back") = []
     check(ref == 42);
     check(&v[0] == &ref);
 };
+
+auto vectorEqualityEqual = test("Vector.operator==_equal") = []
+{
+    auto a = EA::Vector<int> {1, 2, 3};
+    auto b = EA::Vector<int> {1, 2, 3};
+    check(a == b);
+    check(!(a != b));
+};
+
+auto vectorEqualityDifferentValues =
+    test("Vector.operator==_different_values") = []
+{
+    auto a = EA::Vector<int> {1, 2, 3};
+    auto b = EA::Vector<int> {1, 2, 4};
+    check(!(a == b));
+    check(a != b);
+};
+
+auto vectorEqualityDifferentSizes =
+    test("Vector.operator==_different_sizes") = []
+{
+    auto a = EA::Vector<int> {1, 2, 3};
+    auto b = EA::Vector<int> {1, 2};
+    check(!(a == b));
+    check(a != b);
+};
+
+auto vectorEqualityEmpty = test("Vector.operator==_empty") = []
+{
+    auto a = EA::Vector<int>();
+    auto b = EA::Vector<int>();
+    check(a == b);
+    check(!(a != b));
+};
+
+auto vectorEqualityConst = test("Vector.operator==_works_on_const") = []
+{
+    const auto a = EA::Vector<int> {1, 2, 3};
+    const auto b = EA::Vector<int> {1, 2, 3};
+    check(a == b);
+    check(!(a != b));
+};

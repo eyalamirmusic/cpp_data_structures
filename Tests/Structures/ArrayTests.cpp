@@ -93,3 +93,27 @@ auto arrayLastElementIndex = test("Array.getLastElementIndex") = []
     auto a = EA::Array<int, 5>();
     check(a.getLastElementIndex() == 4);
 };
+
+auto arrayEqualityEqual = test("Array.operator==_equal") = []
+{
+    auto a = EA::Array<int, 3> {1, 2, 3};
+    auto b = EA::Array<int, 3> {1, 2, 3};
+    check(a == b);
+    check(!(a != b));
+};
+
+auto arrayEqualityDifferent = test("Array.operator==_different") = []
+{
+    auto a = EA::Array<int, 3> {1, 2, 3};
+    auto b = EA::Array<int, 3> {1, 2, 4};
+    check(!(a == b));
+    check(a != b);
+};
+
+auto arrayEqualityConst = test("Array.operator==_works_on_const") = []
+{
+    const auto a = EA::Array<int, 3> {1, 2, 3};
+    const auto b = EA::Array<int, 3> {1, 2, 3};
+    check(a == b);
+    check(!(a != b));
+};

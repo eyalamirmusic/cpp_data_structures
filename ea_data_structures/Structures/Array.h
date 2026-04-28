@@ -42,10 +42,16 @@ public:
         return *this;
     }
 
-    Array& operator=(const Array& other)
+    Array& operator=(const Array& other) = default;
+
+    bool operator==(const Array& other) const
     {
-        container = other.container;
-        return *this;
+        return container == other.container;
+    }
+
+    bool operator!=(const Array& other) const
+    {
+        return container != other.container;
     }
 
     bool empty() const noexcept { return container.empty(); }
@@ -78,6 +84,7 @@ public:
     }
 
     ContainerType& getArray() { return container; }
+    const ContainerType& getArray() const { return container; }
     void copyFrom(ContainerType& other) { container = other; }
     void copyFrom(Array& other) { container = other.getArray(); }
 

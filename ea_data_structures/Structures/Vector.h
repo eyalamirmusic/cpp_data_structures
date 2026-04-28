@@ -87,6 +87,16 @@ public:
         return *this;
     }
 
+    bool operator==(const Vector& other) const
+    {
+        return container == other.container;
+    }
+
+    bool operator!=(const Vector& other) const
+    {
+        return container != other.container;
+    }
+
     bool empty() const noexcept { return container.empty(); }
 
     int size() const noexcept { return (int) container.size(); }
@@ -195,6 +205,7 @@ public:
     }
 
     ContainerType& getVector() { return container; }
+    const ContainerType& getVector() const { return container; }
     void copyFrom(ContainerType& other) { container = other; }
     void copyFrom(Vector& other) { container = other.getVector(); }
 
