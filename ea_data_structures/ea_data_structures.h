@@ -39,6 +39,7 @@ BEGIN_JUCE_MODULE_DECLARATION
 #include "Structures/MultiVector.h"
 #include "Structures/CopyOnWrite.h"
 
+#include "Flags/SpinHint.h"
 #include "Flags/Locks.h"
 #include "Flags/RecursiveSpinLock.h"
 

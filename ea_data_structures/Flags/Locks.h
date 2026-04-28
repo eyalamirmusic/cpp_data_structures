@@ -2,6 +2,7 @@
 
 #include "CopyableAtomic.h"
 #include "Bool.h"
+#include "SpinHint.h"
 
 //A primitive version of a spinlocks for simple tasks when the lock
 //Is really held for a very short period of time
@@ -27,7 +28,17 @@ class PrimitiveSpinLock
 public:
     void lock() noexcept
     {
-        while (!tryLock()) {}
+        while (true)
+        {
+            if (tryLock())
+                return;
+
+            //Read-only spin until the lock looks free, so contending
+            //cores can keep the cache line in Shared state instead of
+            //ping-ponging it via repeated test_and_set writes.
+            while (locked.test())
+                spinHint();
+        }
     }
 
     bool tryLock() noexcept { return !locked.test_and_set(); }
