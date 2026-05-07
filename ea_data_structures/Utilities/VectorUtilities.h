@@ -21,6 +21,7 @@ Vectors::addIfNotThere(myVector, element).
 #include <cassert>
 #include <iterator>
 #include <ranges>
+#include <vector>
 
 namespace EA::Ranges
 {
