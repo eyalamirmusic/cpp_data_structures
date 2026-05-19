@@ -50,3 +50,4 @@ Everything user-facing is re-exported from `ea_data_structures/ea_data_structure
 - **Real-time safety.** `SharedGUIData` / `GUIToRealTime`, `Fifo`, `CircularBuffer`, and `Flags/` types are designed for audio/real-time threads — preserve lock-free / allocation-free behavior when editing them.
 - **`Atomic<T>`** (in `Flags/`) static-asserts `T` is always lock-free; keep that guarantee intact.
 - **Formatting:** Allman braces, 4-space indent, 85-column limit, left-aligned pointers, `SortIncludes: false` (header order is intentional — notably in `ea_data_structures.h`), `Standard: c++20`.
+- **Braces on control flow:** `for` and `if` bodies use curly braces whenever the body spans more than one line (e.g. a nested `if`, a wrapped statement, or multiple statements). A body that fits on a single line may omit braces.

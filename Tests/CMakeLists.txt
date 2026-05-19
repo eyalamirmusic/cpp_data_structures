@@ -18,6 +18,7 @@ nano_add_executable(ea_data_structures_tests
         Flags/LocksTests.cpp
         Flags/RecursiveSpinLockTests.cpp
         Pointers/AnyTests.cpp
+        Pointers/BroadcasterTests.cpp
         Pointers/CallbackFuncTests.cpp
         Pointers/CloneableTests.cpp
         Pointers/OwningPointerTests.cpp
