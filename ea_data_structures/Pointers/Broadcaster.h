@@ -2,6 +2,7 @@
 
 #include "CallbackFunc.h"
 #include "../Structures/Vector.h"
+#include <type_traits>
 
 //A minimal Listener/Broadcaster pair built on top of CallbackFunc.
 //
@@ -43,10 +44,8 @@ public:
         TriggerOnEvent // only invoke on broadcaster.trigger()
     };
 
-    template <typename Callable>
-    Listener(Broadcaster& broadcasterToObserve,
-             Callable&& callbackToUse,
-             Modes mode = Modes::TriggerNow);
+    template <typename T, typename Callable>
+    Listener(T& source, Callable&& callbackToUse, Modes mode = Modes::TriggerNow);
 
     ~Listener();
 
@@ -61,7 +60,7 @@ private:
     void invoke() const { callback(); }
 
     CallbackFunc callback;
-    Broadcaster* broadcaster;
+    Broadcaster* broadcaster = nullptr;
 };
 
 class Broadcaster
@@ -74,21 +73,6 @@ public:
     Broadcaster& operator=(const Broadcaster&) noexcept { return *this; }
     Broadcaster& operator=(Broadcaster&&) noexcept { return *this; }
 
-    ~Broadcaster()
-    {
-        for (auto* listener: listeners)
-        {
-            if (listener != nullptr)
-                listener->broadcaster = nullptr;
-        }
-
-        for (auto* listener: listenersToAdd)
-        {
-            if (listener != nullptr)
-                listener->broadcaster = nullptr;
-        }
-    }
-
     void trigger()
     {
         flushPendingAdds();
@@ -99,7 +83,7 @@ public:
                 listener->invoke();
         }
 
-        listeners.eraseIf([](Listener* l) { return l == nullptr; });
+        listeners.eraseIf([](const Listener* l) { return l == nullptr; });
     }
 
 private:
@@ -107,7 +91,7 @@ private:
 
     void attach(Listener* listener) { listenersToAdd.add(listener); }
 
-    void detach(Listener* listener)
+    void detach(const Listener* listener)
     {
         for (auto& slot: listeners)
         {
@@ -143,13 +127,16 @@ private:
     Vector<Listener*> listenersToAdd;
 };
 
-template <typename Callable>
-Listener::Listener(Broadcaster& broadcasterToObserve,
-                   Callable&& callbackToUse,
-                   Modes mode)
+template <typename T, typename Callable>
+Listener::Listener(T& source, Callable&& callbackToUse, Modes mode)
     : callback(std::forward<Callable>(callbackToUse))
-    , broadcaster(&broadcasterToObserve)
+    , broadcaster(nullptr)
 {
+    if constexpr (std::is_base_of_v<Broadcaster, T>)
+        broadcaster = &source;
+    else
+        broadcaster = &source.getBroadcaster();
+
     if (mode == Modes::TriggerNow)
         callback();
 
@@ -161,5 +148,15 @@ inline Listener::~Listener()
     if (broadcaster != nullptr)
         broadcaster->detach(this);
 }
+
+struct BroadcasterOwner
+{
+    virtual ~BroadcasterOwner() = default;
+    virtual Broadcaster& getBroadcaster() { return broadcaster; }
+
+    void trigger() { broadcaster.trigger(); }
+
+    Broadcaster broadcaster;
+};
 
 } // namespace EA

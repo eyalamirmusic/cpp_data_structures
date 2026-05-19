@@ -301,6 +301,77 @@ auto addAndDetachInSameCallbackIsNoop =
     check(transientCalls == 0);
 };
 
+auto listenerConstructsFromTypeWithGetBroadcaster =
+    test("Listener.constructs_from_type_with_getBroadcaster") = []
+{
+    EA::BroadcasterOwner owner;
+    auto called = 0;
+    EA::Listener listener {owner, [&] { ++called; }, Mode::TriggerOnEvent};
+
+    owner.broadcaster.trigger();
+    check(called == 1);
+
+    owner.getBroadcaster().trigger();
+    check(called == 2);
+};
+
+struct FirstOwner : EA::BroadcasterOwner
+{
+};
+struct SecondOwner : EA::BroadcasterOwner
+{
+};
+
+EA::BroadcasterOwner& getOwner()
+{
+    static auto first = FirstOwner();
+    static auto second = FirstOwner();
+
+    if (0)
+        return first;
+
+    return second;
+}
+
+struct PluginState
+{
+    void loadPreset()
+    {
+        presetAboutToLoad.trigger();
+        ++x;
+        presetLoaded.trigger();
+    }
+
+    EA::Broadcaster presetAboutToLoad;
+    EA::Broadcaster presetLoaded;
+    int x = 0;
+};
+
+struct UIObject
+{
+    UIObject(PluginState& stateToUse)
+        : pluginState(stateToUse)
+    {
+    }
+
+    void refreshUI() {}
+
+    PluginState& pluginState;
+    EA::Listener listener {pluginState.presetLoaded, [&] { refreshUI(); }};
+};
+
+auto listenerFromGetBroadcasterRespectsTriggerNow =
+    test("Listener.from_getBroadcaster_respects_trigger_now") = []
+{
+    EA::BroadcasterOwner owner;
+    auto called = 0;
+    EA::Listener listener {owner, [&] { ++called; }};
+    check(called == 1);
+
+    owner.broadcaster.trigger();
+    check(called == 2);
+};
+
 auto removeAndAddInteractAcrossRounds =
     test("Broadcaster.remove_then_add_compacts_between_rounds") = []
 {
