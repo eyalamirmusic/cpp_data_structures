@@ -16,6 +16,7 @@ BEGIN_JUCE_MODULE_DECLARATION
 
 #include "Pointers/CallbackFunc.h"
 #include "Pointers/Broadcaster.h"
+#include "Pointers/Broadcasting.h"
 #include "Pointers/Cloneable.h"
 #include "Pointers/Any.h"
 #include "Pointers/Ref.h"
