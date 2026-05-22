@@ -68,6 +68,17 @@ class Broadcaster
 public:
     Broadcaster() = default;
 
+    ~Broadcaster()
+    {
+        for (auto* listener: listeners)
+            if (listener != nullptr)
+                listener->broadcaster = nullptr;
+
+        for (auto* listener: listenersToAdd)
+            if (listener != nullptr)
+                listener->broadcaster = nullptr;
+    }
+
     Broadcaster(const Broadcaster&) noexcept {}
     Broadcaster(Broadcaster&&) noexcept {}
     Broadcaster& operator=(const Broadcaster&) noexcept { return *this; }
