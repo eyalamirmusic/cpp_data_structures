@@ -117,3 +117,32 @@ auto arrayEqualityConst = test("Array.operator==_works_on_const") = []
     check(a == b);
     check(!(a != b));
 };
+
+auto arrayDeducedSize = test("Array.deduced_size_without_explicit_size") = []
+{
+    EA::Array a {1, 2, 3, 4};
+    static_assert(std::is_same_v<decltype(a), EA::Array<int, 4>>);
+    static_assert(decltype(a)::size() == 4);
+    check(a.size() == 4);
+    check(a[0] == 1);
+    check(a[1] == 2);
+    check(a[2] == 3);
+    check(a[3] == 4);
+};
+
+auto arrayDeducedElementType = test("Array.deduced_size_deduces_element_type") = []
+{
+    EA::Array a {1.5, 2.5, 3.5};
+    static_assert(std::is_same_v<decltype(a), EA::Array<double, 3>>);
+    static_assert(std::is_same_v<decltype(a)::value_type, double>);
+    check(a.size() == 3);
+    check(a[2] == 3.5);
+};
+
+auto arrayDeducedSingleElement = test("Array.deduced_size_single_element") = []
+{
+    EA::Array a {42};
+    static_assert(std::is_same_v<decltype(a), EA::Array<int, 1>>);
+    check(a.size() == 1);
+    check(a[0] == 42);
+};
