@@ -37,6 +37,18 @@ jobs:
             cc: clang-cl
             cxx: clang-cl
 
+          - name: Windows MSVC ARM64
+            os: windows-11-arm
+            msvc_dev: true
+            msvc_arch: arm64
+
+          - name: Windows Clang ARM64
+            os: windows-11-arm
+            msvc_dev: true
+            msvc_arch: arm64
+            cc: clang-cl
+            cxx: clang-cl
+
     steps:
       - uses: actions/checkout@v5
 
@@ -45,7 +57,9 @@ jobs:
 
       - name: Set up MSVC environment
         if: matrix.msvc_dev
-        uses: ilammy/msvc-dev-cmd@v1
+        uses: TheMrMilchmann/setup-msvc-dev@v4
+        with:
+          arch: ${{ matrix.msvc_arch || 'x64' }}
 
       - name: Configure
         env:
