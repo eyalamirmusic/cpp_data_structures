@@ -38,10 +38,10 @@ jobs:
             cxx: clang-cl
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Set up Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v5
+      - name: Set up CMake and Ninja
+        uses: lukka/get-cmake@latest
 
       - name: Set up MSVC environment
         if: matrix.msvc_dev
