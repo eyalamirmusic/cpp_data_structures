@@ -59,3 +59,9 @@ target_compile_options(ea_data_structures_tests PRIVATE
     $<$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>:/W4 /WX>
     $<$<CXX_COMPILER_FRONTEND_VARIANT:GNU>:-Wall -Wextra -Wpedantic -Werror>
 )
+
+#std::atomic's runtime is_lock_free() needs libatomic when building with
+#Clang against libstdc++ (GCC links it implicitly, macOS/Windows don't have it)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_libraries(ea_data_structures_tests PRIVATE atomic)
+endif()
