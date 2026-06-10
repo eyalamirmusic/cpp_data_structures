@@ -19,8 +19,10 @@ Vectors::addIfNotThere(myVector, element).
 
 #include <algorithm>
 #include <cassert>
+#include <initializer_list>
 #include <iterator>
 #include <ranges>
+#include <type_traits>
 #include <vector>
 
 namespace EA::Ranges
@@ -200,29 +202,38 @@ bool contains(const T& container, const A& elementToCheck)
            != std::ranges::end(container);
 }
 
-// Gets a pointer to an element that can be compared to an element of this
-// container, If the element doesn't exist, this returns a nullptr
-template <typename T, typename A>
-T* getElementPointer(const T& container, A elementToCompare)
+// Gets a pointer to the first element comparing equal to the given value.
+// If no element matches, this returns a nullptr
+template <typename Container, typename A>
+auto find(Container& container, const A& element)
 {
-    int index = getIndexOf(container, elementToCompare);
+    using Pointer = decltype(&container[0]);
+
+    auto index = getIndexOf(container, element);
 
     if (index >= 0)
-        return &container[index];
+        return Pointer(&container[index]);
 
-    return nullptr;
+    return Pointer(nullptr);
 }
 
 // Gets a pointer to an element that can be compared to an element of this
-// container This will crash if an element isn't found!
-//
-// If 'not finding' the element is a valid result, use getElementPointer()
-// instead and check of nullptr Or check if the element is there first with
-// contains(), which isn't as effecient.
-template <typename T, typename A>
-T& getElementRef(const T& container, A elementToCompare)
+// container, If the element doesn't exist, this returns a nullptr
+template <typename Container, typename A>
+auto getElementPointer(Container& container, const A& element)
 {
-    return *getElementPointer(container, elementToCompare);
+    return find(container, element);
+}
+
+// Gets a reference to an element that can be compared to an element of this
+// container. This will crash if an element isn't found!
+//
+// If 'not finding' the element is a valid result, use find()
+// instead and check for nullptr
+template <typename Container, typename A>
+auto& getElementRef(Container& container, const A& element)
+{
+    return *find(container, element);
 }
 
 // Remove an element of the container at a certain index.
@@ -239,11 +250,31 @@ void removeAt(T& container, int index)
 template <typename Container, typename Callable>
 bool eraseIf(Container& container, Callable callable)
 {
-    auto prevSize = container.size();
-    auto removed = std::ranges::remove_if(container, callable);
-    container.erase(removed.begin(), removed.end());
+    if constexpr (requires {
+                      container.erase(container.begin(), container.end());
+                  })
+    {
+        auto prevSize = container.size();
+        auto removed = std::ranges::remove_if(container, callable);
+        container.erase(removed.begin(), removed.end());
 
-    return prevSize != container.size();
+        return prevSize != container.size();
+    }
+    else
+    {
+        bool erased = false;
+
+        for (int index = (int) container.size() - 1; index >= 0; --index)
+        {
+            if (callable(container[index]))
+            {
+                removeAt(container, index);
+                erased = true;
+            }
+        }
+
+        return erased;
+    }
 }
 
 // Removed the first match found in the container, going from beginning to end.
@@ -306,6 +337,146 @@ void copyInto(T& source, A& target)
 {
     target.resize(source.size());
     std::ranges::copy(source, std::ranges::begin(target));
+}
+
+// Assigns the given value to every element of the container
+template <typename Container, typename T>
+void fill(Container& container, const T& value)
+{
+    for (auto& element: container)
+        element = value;
+}
+
+// Assigns the given value to the first numItems elements of the container
+template <typename Container, typename T>
+void fill(Container& container, const T& value, int numItems)
+{
+    for (int index = 0; index < numItems; ++index)
+        container[index] = value;
+}
+
+// Adds each element of the source to the corresponding element of the target
+template <typename Target, typename Source>
+void mixFrom(Target& target, Source& source)
+{
+    for (int index = 0; index < (int) target.size(); ++index)
+        target[index] += source[index];
+}
+
+// Appends all elements of the source to the end of the target
+template <typename Target, typename Source>
+void addFrom(Target& target, const Source& source)
+{
+    if constexpr (requires { target.reserveAtLeast(0); })
+        target.reserveAtLeast((int) target.size() + (int) source.size());
+
+    for (auto& element: source)
+        target.push_back(element);
+}
+
+// Appends the source elements at the given indexes to the end of the target
+template <typename Target, typename Source>
+void addFromIndexes(Target& target,
+                    const Source& source,
+                    std::initializer_list<int> indexes)
+{
+    for (auto index: indexes)
+        target.push_back(source[index]);
+}
+
+// Replaces the target's contents with up to numItems elements of the source,
+// starting at startIndex. The count is clamped to what the source contains
+template <typename Target, typename Source>
+void copyRange(Target& target, const Source& source, int startIndex, int numItems)
+{
+    auto numToCopy = std::min(numItems, (int) source.size() - startIndex);
+
+    target.clear();
+
+    if constexpr (requires { target.reserveAtLeast(0); })
+        target.reserveAtLeast(numToCopy);
+
+    for (int index = 0; index < numToCopy; ++index)
+        target.push_back(source[startIndex + index]);
+}
+
+// Removes the half-open index range [startRange, endRange).
+// Out-of-bounds ranges are ignored
+template <typename Container>
+void removeRange(Container& container, int startRange, int endRange)
+{
+    if (startRange < 0 || endRange > (int) container.size()
+        || startRange >= endRange)
+        return;
+
+    if constexpr (requires {
+                      container.erase(container.begin(), container.end());
+                  })
+    {
+        container.erase(container.begin() + startRange,
+                        container.begin() + endRange);
+    }
+    else
+    {
+        for (int index = endRange - 1; index >= startRange; --index)
+            removeAt(container, index);
+    }
+}
+
+// Copies elements matching the predicate over the beginning of the target,
+// which must already be large enough to hold them
+template <typename Source, typename Target, typename Predicate>
+void copyFilteredTo(const Source& source, Target& target, Predicate&& predicate)
+{
+    std::copy_if(source.begin(), source.end(), target.begin(), predicate);
+}
+
+// Appends the elements matching the predicate to the end of the target
+template <typename Source, typename Target, typename Predicate>
+void addFilteredTo(const Source& source, Target& target, Predicate&& predicate)
+{
+    std::copy_if(source.begin(),
+                 source.end(),
+                 std::back_inserter(target),
+                 predicate);
+}
+
+// Maps a valid index into the 0..1 range (0 = first element, 1 = last).
+// Returns -1 for out-of-range indexes
+template <typename FloatType, typename Container>
+FloatType getIndexAsRelative(const Container& container, int index)
+{
+    auto size = (int) container.size();
+
+    if (index < 0 || index >= size)
+        return FloatType(-1);
+
+    return Ranges::map(FloatType(index),
+                       FloatType(0),
+                       FloatType(size - 1),
+                       FloatType(0),
+                       FloatType(1));
+}
+
+// Maps a 0..1 proportion to an index into the container
+template <typename Container, typename FloatType>
+int getRelativeIndex(const Container& container, FloatType proportion)
+{
+    return Ranges::getIndexProprtion(proportion, (int) container.size());
+}
+
+template <typename Container, typename FloatType>
+auto& getRelative(Container& container, FloatType proportion)
+{
+    return container[getRelativeIndex(container, proportion)];
+}
+
+// Returns the position of the first element equal to the given one as a
+// 0..1 proportion, or -1 if it isn't found
+template <typename FloatType, typename Container, typename A>
+FloatType getRelativeIndexOf(const Container& container, const A& item)
+{
+    return getIndexAsRelative<FloatType>(container, getIndexOf(container, item));
 }
 
 /**
@@ -376,24 +547,22 @@ CallableType zipWithIndexed(const FirstContainerType& firstContainer,
 
 /**
  *  Applies the given function over each element of the source container and
- * returns the results in a new container.
+ * returns the results in a new container of the same kind. The element type
+ * may change; the result type comes from the container's Rebound alias.
  */
-template <template <typename, int> typename VectorType,
-          typename ElemType,
-          int Sz,
-          typename Func>
-auto transform(const VectorType<ElemType, Sz>& container, Func&& f)
+template <typename Container, typename Func>
+auto transform(const Container& container, Func&& f)
 {
-    using New_Elem_T = decltype(f(*container.begin()));
+    using NewElem = std::decay_t<decltype(f(*container.begin()))>;
 
-    VectorType<New_Elem_T, Sz> new_container;
-    new_container.resize(container.size());
+    typename Container::template Rebound<NewElem> result;
+    result.resize(container.size());
 
     std::ranges::transform(container,
-                           std::ranges::begin(new_container),
+                           std::ranges::begin(result),
                            std::forward<Func>(f));
 
-    return std::move(new_container);
+    return result;
 }
 
 /**

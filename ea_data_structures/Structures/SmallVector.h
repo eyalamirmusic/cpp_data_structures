@@ -14,6 +14,11 @@ struct SmallVector : VectorBase
     using value_type = T;
     using Iterator = T*;
 
+    //The same kind of container holding a different element type,
+    //used by Vectors::transform
+    template <typename U>
+    using Rebound = SmallVector<U, PreAllocatedSize>;
+
     SmallVector() = default;
     SmallVector(std::initializer_list<T> list) { add(list); }
 
@@ -151,14 +156,7 @@ struct SmallVector : VectorBase
     }
 
     void copyFrom(const SmallVector& other, int startIndex, int numItems)
-    {
-        auto numToCopy = std::min(numItems, other.size() - startIndex);
-
-        clear();
-
-        for (int index = 0; index < numToCopy; ++index)
-            add(other[startIndex + index]);
-    }
+    { Vectors::copyRange(*this, other, startIndex, numItems); }
 
     void copyFrom(const SmallVector& other, int numItems)
     { copyFrom(other, 0, numItems); }
@@ -167,8 +165,8 @@ struct SmallVector : VectorBase
     { return Vectors::addIfNotThere(*this, element); }
 
     template <typename A>
-    void removeAllMatches(const A& element)
-    { Vectors::removeAllMatches(*this, element); }
+    int removeAllMatches(const A& element)
+    { return Vectors::removeAllMatches(*this, element); }
 
     void resize(size_t numElements) { resize((int) numElements); }
     void resize(int numElements)
@@ -183,33 +181,23 @@ struct SmallVector : VectorBase
 
     template <typename FloatType>
     FloatType getIndexAsRelative(int index) const
-    {
-        if (index < 0 || index >= size())
-            return FloatType(-1);
-
-        return Ranges::map(index,
-                           FloatType(0),
-                           (FloatType) getLastElementIndex(),
-                           FloatType(0),
-                           FloatType(1));
-    }
+    { return Vectors::getIndexAsRelative<FloatType>(*this, index); }
 
     template <typename FloatType>
-    int getRelativeIndex(FloatType proprtion) const
-    {
-        auto index =
-            Ranges::map(proprtion, FloatType(0), (FloatType) getLastElementIndex());
-
-        return (int) index;
-    }
+    int getRelativeIndex(FloatType proportion) const
+    { return Vectors::getRelativeIndex(*this, proportion); }
 
     template <typename FloatType>
-    T& getRelative(FloatType proprtion) const
-    { return get(getRelativeIndex(proprtion)); }
+    T& getRelative(FloatType proportion)
+    { return Vectors::getRelative(*this, proportion); }
+
+    template <typename FloatType>
+    const T& getRelative(FloatType proportion) const
+    { return Vectors::getRelative(*this, proportion); }
 
     template <typename FloatType>
     FloatType getRelativeIndexOf(const T& item) const
-    { return getIndexAsRelative<FloatType>(getIndexOf(item)); }
+    { return Vectors::getRelativeIndexOf<FloatType>(*this, item); }
 
     template <typename... Args>
     void resizeAndCreate(int numElements, Args&&... args)
@@ -223,43 +211,28 @@ struct SmallVector : VectorBase
     }
 
     template <typename A>
-    void mixFrom(A& other)
-    {
-        for (int index = 0; index < size(); ++index)
-            get(index) += other[index];
-    }
+    void mixFrom(A& other) { Vectors::mixFrom(*this, other); }
 
-    void fill(const T& value)
-    {
-        for (auto& element: *this)
-            element = value;
-    }
+    void fill(const T& value) { Vectors::fill(*this, value); }
 
     void fill(const T& value, int numItems)
-    {
-        for (int index = 0; index < numItems; ++index)
-            get(index) = value;
-    }
+    { Vectors::fill(*this, value, numItems); }
 
     template <typename A>
-    void addFrom(const A& other)
-    {
-        for (auto& element: other)
-            push_back(element);
-    }
+    void addFrom(const A& other) { Vectors::addFrom(*this, other); }
 
     template <typename A>
     void addFromIndexes(const A& other, std::initializer_list<int> indexes)
-    {
-        for (auto& index: indexes)
-            add(other[index]);
-    }
+    { Vectors::addFromIndexes(*this, other, indexes); }
 
     template <typename A>
     void fillFrom(A& other)
     { Vectors::copyInto(other, *this); }
 
     void erase(Iterator it) { removeAt(int(it - begin())); }
+
+    void removeRange(int startRange, int endRange)
+    { Vectors::removeRange(*this, startRange, endRange); }
 
     void removeAt(int index)
     {
@@ -271,21 +244,7 @@ struct SmallVector : VectorBase
 
     template <typename Callable>
     bool eraseIf(Callable&& callable)
-    {
-        bool erased = false;
-        auto last = getLastElementIndex();
-
-        for (int index = last; index >= 0; --index)
-        {
-            if (callable(get(index)))
-            {
-                removeAt(index);
-                erased = true;
-            }
-        }
-
-        return erased;
-    }
+    { return Vectors::eraseIf(*this, callable); }
 
     void pop_back()
     {
@@ -304,9 +263,9 @@ struct SmallVector : VectorBase
     }
 
     template <typename Predicate>
-    SmallVector& sort(const Predicate& pred, bool reverse = false)
+    SmallVector& sort(const Predicate& pred, bool forward = true)
     {
-        Vectors::sort(*this, pred, reverse);
+        Vectors::sort(*this, pred, forward);
         return *this;
     }
 
@@ -326,15 +285,12 @@ struct SmallVector : VectorBase
     { return Vectors::getIndexOf(*this, element); }
 
     template <typename ObjectType>
+    const T* find(const ObjectType& element) const
+    { return Vectors::find(*this, element); }
+
+    template <typename ObjectType>
     T* find(const ObjectType& element)
-    {
-        auto index = getIndexOf(element);
-
-        if (index >= 0)
-            return &get(index);
-
-        return nullptr;
-    }
+    { return Vectors::find(*this, element); }
 
     template <typename Func>
     auto transform(Func&& func) const
@@ -347,17 +303,17 @@ struct SmallVector : VectorBase
     template <typename Predicate>
     SmallVector& filterInPlace(Predicate&& predicate)
     {
-        eraseIf(predicate);
+        Vectors::eraseIf(*this, predicate);
         return *this;
     }
 
     template <typename Predicate>
     void copyFilteredTo(SmallVector& other, Predicate&& predicate) const
-    { std::copy_if(begin(), end(), other.begin(), predicate); }
+    { Vectors::copyFilteredTo(*this, other, predicate); }
 
     template <typename Predicate>
     void addFilteredTo(SmallVector& other, Predicate&& predicate) const
-    { std::copy_if(begin(), end(), std::back_inserter(other), predicate); }
+    { Vectors::addFilteredTo(*this, other, predicate); }
 
     const T* data() const
     {

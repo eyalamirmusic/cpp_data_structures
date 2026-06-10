@@ -35,6 +35,7 @@ nano_add_executable(ea_data_structures_tests
         Structures/MapVectorTests.cpp
         Structures/MultiVectorTests.cpp
         Structures/OwnedVectorTests.cpp
+        Structures/SharedContainerTests.cpp
         Structures/SharedGUIDataTests.cpp
         Structures/SizeTypeTests.cpp
         Structures/SmallVectorTests.cpp

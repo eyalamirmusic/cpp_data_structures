@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <iterator>
 #include "SizeType.h"
 #include "../Utilities/VectorUtilities.h"
 
@@ -29,6 +28,11 @@ public:
     using Iterator = typename ContainerType::iterator;
     using Const_Iterator = typename ContainerType::const_iterator;
     using value_type = T;
+
+    //The same kind of container holding a different element type,
+    //used by Vectors::transform
+    template <typename U>
+    using Rebound = Vector<U>;
 
     Vector() = default;
     Vector(const Vector& other)
@@ -196,15 +200,7 @@ public:
     void copyFrom(Vector& other) { container = other.getVector(); }
 
     void copyFrom(const Vector& other, int startIndex, int numItems)
-    {
-        auto numToCopy = std::min(numItems, other.size() - startIndex);
-
-        clear();
-        reserveAtLeast(numToCopy);
-
-        for (int index = 0; index < numToCopy; ++index)
-            add(other[startIndex + index]);
-    }
+    { Vectors::copyRange(*this, other, startIndex, numItems); }
 
     void copyFrom(const Vector& other, int numItems)
     { copyFrom(other, 0, numItems); }
@@ -229,20 +225,11 @@ public:
 
     template <typename FloatType>
     FloatType getIndexAsRelative(int index) const
-    {
-        if (index < 0 || index >= size())
-            return FloatType(-1);
-
-        return Ranges::map(FloatType(index),
-                           FloatType(0),
-                           (FloatType) getLastElementIndex(),
-                           FloatType(0),
-                           FloatType(1));
-    }
+    { return Vectors::getIndexAsRelative<FloatType>(*this, index); }
 
     template <typename FloatType>
-    int getRelativeIndex(FloatType proprtion) const
-    { return Ranges::getIndexProprtion(proprtion, size()); }
+    int getRelativeIndex(FloatType proportion) const
+    { return Vectors::getRelativeIndex(*this, proportion); }
 
     template <typename Callable>
     Vector<int> getIndexesMatching(Callable&& func) const
@@ -266,16 +253,16 @@ public:
     }
 
     template <typename FloatType>
-    T& getRelative(FloatType proprtion)
-    { return get(getRelativeIndex(proprtion)); }
+    T& getRelative(FloatType proportion)
+    { return Vectors::getRelative(*this, proportion); }
 
     template <typename FloatType>
-    const T& getRelative(FloatType proprtion) const
-    { return get(getRelativeIndex(proprtion)); }
+    const T& getRelative(FloatType proportion) const
+    { return Vectors::getRelative(*this, proportion); }
 
     template <typename FloatType, typename A>
     FloatType getRelativeIndexOf(const A& item) const
-    { return getIndexAsRelative<FloatType>(getIndexOf(item)); }
+    { return Vectors::getRelativeIndexOf<FloatType>(*this, item); }
 
     template <typename... Args>
     void resizeAndCreate(int numElements, Args&&... args)
@@ -290,49 +277,26 @@ public:
     }
 
     template <typename A>
-    void mixFrom(A& other)
-    {
-        for (int index = 0; index < size(); ++index)
-            container[index] += other[index];
-    }
+    void mixFrom(A& other) { Vectors::mixFrom(*this, other); }
 
-    void fill(const T& value)
-    {
-        for (auto& element: container)
-            element = value;
-    }
+    void fill(const T& value) { Vectors::fill(*this, value); }
 
     void fill(const T& value, int numItems)
-    {
-        for (int index = 0; index < numItems; ++index)
-            get(index) = value;
-    }
+    { Vectors::fill(*this, value, numItems); }
 
     template <typename A>
-    void addFrom(const A& other)
-    {
-        reserveAtLeast(size() + other.size());
-
-        for (auto& element: other)
-            container.push_back(element);
-    }
+    void addFrom(const A& other) { Vectors::addFrom(*this, other); }
 
     template <typename A>
     void addFromIndexes(const A& other, std::initializer_list<int> indexes)
-    {
-        for (auto& index: indexes)
-            add(other[index]);
-    }
+    { Vectors::addFromIndexes(*this, other, indexes); }
 
     template <typename A>
     void fillFrom(A& other)
-    { Vectors::copyInto(other, container); }
+    { Vectors::copyInto(other, *this); }
 
     void removeRange(int startRange, int endRange)
-    {
-        if (!empty() && endRange <= size())
-            getVector().erase(begin() + startRange, begin() + endRange);
-    }
+    { Vectors::removeRange(*this, startRange, endRange); }
 
     void removeAt(int index) { Vectors::removeAt(container, index); }
 
@@ -412,25 +376,11 @@ public:
 
     template <typename ObjectType>
     const T* find(const ObjectType& element) const
-    {
-        auto index = getIndexOf(element);
-
-        if (index >= 0)
-            return &get(index);
-
-        return nullptr;
-    }
+    { return Vectors::find(*this, element); }
 
     template <typename ObjectType>
     T* find(const ObjectType& element)
-    {
-        auto index = getIndexOf(element);
-
-        if (index >= 0)
-            return &get(index);
-
-        return nullptr;
-    }
+    { return Vectors::find(*this, element); }
 
     template <typename Func>
     auto transform(Func&& func) const
@@ -443,18 +393,17 @@ public:
     template <typename Predicate>
     Vector& filterInPlace(Predicate&& predicate)
     {
-        auto removed = std::remove_if(begin(), end(), predicate);
-        container.erase(removed, end());
+        Vectors::eraseIf(container, predicate);
         return *this;
     }
 
     template <typename Predicate>
     void copyFilteredTo(Vector& other, Predicate&& predicate) const
-    { std::copy_if(begin(), end(), other.begin(), predicate); }
+    { Vectors::copyFilteredTo(*this, other, predicate); }
 
     template <typename Predicate>
     void addFilteredTo(Vector& other, Predicate&& predicate) const
-    { std::copy_if(begin(), end(), std::back_inserter(other), predicate); }
+    { Vectors::addFilteredTo(*this, other, predicate); }
 
     const T* data() const { return container.data(); }
     T* data() { return container.data(); }
