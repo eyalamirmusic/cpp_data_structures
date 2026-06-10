@@ -1,30 +1,33 @@
 #pragma once
 
+#include <concepts>
+#include <cstddef>
+
 //SizeType: A type meant to help connecting signed and unsigned containers
 namespace EA
 {
+//Any integer type that can describe a size or an index
+template <typename T>
+concept SizeCompatible = std::integral<T> && !std::same_as<T, bool>;
+
 class SizeType
 {
 public:
     SizeType() = default;
-    SizeType(size_t typeToUse)
-        : size(typeToUse)
-    {
-    }
 
-    SizeType(int typeToUse)
-        : size((size_t) typeToUse)
+    template <SizeCompatible T>
+    SizeType(T typeToUse)
+        : size(static_cast<size_t>(typeToUse))
     {
     }
 
     template <typename T>
     T get() const
-    {
-        return static_cast<T>(size);
-    }
+    { return static_cast<T>(size); }
 
-    operator int() const { return get<int>(); }
-    operator size_t() const { return get<size_t>(); }
+    template <SizeCompatible T>
+    operator T() const
+    { return get<T>(); }
 
 private:
     size_t size = 0;
