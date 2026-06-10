@@ -276,7 +276,7 @@ struct StaticVector : VectorBase
         Vectors::removeRange(*this, startRange, endRange);
     }
 
-    void erase(Iterator it) { removeAt(it - begin()); }
+    void erase(Iterator it) { removeAt(int(it - begin())); }
 
     void removeAt(int index)
     {
