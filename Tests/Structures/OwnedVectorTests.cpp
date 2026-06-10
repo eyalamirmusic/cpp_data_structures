@@ -1,6 +1,7 @@
 #include <NanoTest/NanoTest.h>
 #include <ea_data_structures/Pointers/Cloneable.h>
 #include <ea_data_structures/Structures/OwnedVector.h>
+#include <string>
 
 using namespace nano;
 
@@ -113,4 +114,17 @@ auto ownedVectorCreateDerived =
     check(v.size() == 1);
     check(derived.value() == 42);
     check(v[0]->value() == 42);
+};
+
+auto ownedVectorInsertNewRange =
+    test("OwnedVector.insertNewRange_with_rvalue_arg") = []
+{
+    auto v = EA::OwnedVector<std::string>();
+    auto s = std::string("hello");
+    v.insertNewRange(0, 3, std::move(s));
+
+    check(v.size() == 3);
+    check(*v[0] == "hello");
+    check(*v[1] == "hello");
+    check(*v[2] == "hello");
 };

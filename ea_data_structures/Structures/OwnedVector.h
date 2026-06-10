@@ -5,6 +5,7 @@
 // with some helper functions for this particlar use case
 #include "../Pointers/OwningPointer.h"
 #include "Vector.h"
+#include <type_traits>
 
 namespace EA
 {
@@ -61,9 +62,7 @@ public:
 
     template <typename ObjectType>
     bool contains(const ObjectType& elementToCheck)
-    {
-        return getIndexOfElement(elementToCheck) >= 0;
-    }
+    { return getIndexOfElement(elementToCheck) >= 0; }
 
     template <typename ObjectType>
     bool addElementIfNotThere(const ObjectType& elementToAdd)
@@ -80,17 +79,23 @@ public:
     ObjectType& insertNew(int position, Args&&... args)
     {
         auto& created = this->insertAt(position);
-        return *created.template create<ObjectType>(std::forward<Args>(args)...);
+
+        if constexpr (std::is_same_v<ObjectType, T>)
+            return *created.create(std::forward<Args>(args)...);
+        else
+            return *created.template create<ObjectType>(std::forward<Args>(args)...);
     }
 
+    //The arguments are copied into every inserted element; forwarding only
+    //happens on the last one, so rvalues are moved exactly once
     template <typename ObjectType = T, typename... Args>
     void insertNewRange(int start, int numItems, Args&&... args)
     {
-        while (numItems > 0)
-        {
+        for (; numItems > 1; --numItems)
+            insertNew<ObjectType>(start, args...);
+
+        if (numItems == 1)
             insertNew<ObjectType>(start, std::forward<Args>(args)...);
-            --numItems;
-        }
     }
 
     template <typename... Args>

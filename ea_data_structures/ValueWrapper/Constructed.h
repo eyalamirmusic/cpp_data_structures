@@ -39,13 +39,20 @@ public:
 
     bool isValid() const { return active; }
 
-    bool operator==(T* other) const { return storage.get() != other; }
-    bool operator==(T& other) const
+    bool operator==(const T* other) const
+    {
+        if (!active)
+            return other == nullptr;
+
+        return storage.get() == other;
+    }
+
+    bool operator==(const T& other) const
     {
         if (!active)
             return false;
 
-        return (*storage).object == other;
+        return *storage == other;
     }
 
     void copyFrom(const Constructed& other)

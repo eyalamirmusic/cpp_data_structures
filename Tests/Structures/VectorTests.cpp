@@ -1,5 +1,6 @@
 #include <NanoTest/NanoTest.h>
 #include <ea_data_structures/Structures/Vector.h>
+#include <string>
 #include <type_traits>
 
 using namespace nano;
@@ -164,8 +165,7 @@ auto vectorEqualityEqual = test("Vector.operator==_equal") = []
     check(!(a != b));
 };
 
-auto vectorEqualityDifferentValues =
-    test("Vector.operator==_different_values") = []
+auto vectorEqualityDifferentValues = test("Vector.operator==_different_values") = []
 {
     auto a = EA::Vector<int> {1, 2, 3};
     auto b = EA::Vector<int> {1, 2, 4};
@@ -173,8 +173,7 @@ auto vectorEqualityDifferentValues =
     check(a != b);
 };
 
-auto vectorEqualityDifferentSizes =
-    test("Vector.operator==_different_sizes") = []
+auto vectorEqualityDifferentSizes = test("Vector.operator==_different_sizes") = []
 {
     auto a = EA::Vector<int> {1, 2, 3};
     auto b = EA::Vector<int> {1, 2};
@@ -196,4 +195,54 @@ auto vectorEqualityConst = test("Vector.operator==_works_on_const") = []
     const auto b = EA::Vector<int> {1, 2, 3};
     check(a == b);
     check(!(a != b));
+};
+
+auto vectorCopyFromRange = test("Vector.copyFrom_range") = []
+{
+    auto src = EA::Vector<int> {1, 2, 3, 4, 5};
+
+    auto dst = EA::Vector<int>();
+    dst.copyFrom(src, 0, 3);
+    check(dst.size() == 3);
+    check(dst[0] == 1);
+    check(dst[2] == 3);
+
+    dst.copyFrom(src, 2, 2);
+    check(dst.size() == 2);
+    check(dst[0] == 3);
+    check(dst[1] == 4);
+
+    //Requesting more items than available clamps to the source size
+    dst.copyFrom(src, 3, 10);
+    check(dst.size() == 2);
+    check(dst[0] == 4);
+    check(dst[1] == 5);
+};
+
+auto vectorInsertRangeRvalue = test("Vector.insertRange_with_rvalue") = []
+{
+    auto v = EA::Vector<std::string>();
+    auto s = std::string("hello");
+    v.insertRange(0, 3, std::move(s));
+
+    check(v.size() == 3);
+    check(v[0] == "hello");
+    check(v[1] == "hello");
+    check(v[2] == "hello");
+};
+
+auto vectorRemoveRangeThroughEnd = test("Vector.removeRange_through_end") = []
+{
+    auto v = EA::Vector<int> {1, 2, 3, 4, 5};
+    v.removeRange(2, 5);
+    check(v.size() == 2);
+    check(v[0] == 1);
+    check(v[1] == 2);
+
+    auto middle = EA::Vector<int> {1, 2, 3, 4, 5};
+    middle.removeRange(1, 3);
+    check(middle.size() == 3);
+    check(middle[0] == 1);
+    check(middle[1] == 4);
+    check(middle[2] == 5);
 };

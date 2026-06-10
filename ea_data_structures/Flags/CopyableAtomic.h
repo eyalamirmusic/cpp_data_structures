@@ -10,9 +10,7 @@ struct AtomicBase
 
 template <typename T>
 constexpr bool isAtomic()
-{
-    return std::is_base_of_v<AtomicBase, T>;
-}
+ { return std::is_base_of_v<AtomicBase, T>; }
 
 //A simple wrapper around std::atomic, making sure to always be lock free
 template <typename T>
@@ -20,11 +18,12 @@ struct Atomic
     : std::atomic<T>
     , AtomicBase
 {
+    static_assert(Atomics::isLockFree<T>(),
+                  "Can only use safely with small lock free objects");
+
     using std::atomic<T>::atomic;
 
     using std::atomic<T>::operator=;
-
-    static Atomics::Validator<T> validator;
 };
 
 //A copyable version of std::atomic/EA::Atomic

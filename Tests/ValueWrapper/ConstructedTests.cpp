@@ -41,9 +41,7 @@ struct RefCounted
 {
     explicit RefCounted(int& counter)
         : count(counter)
-    {
-        ++count;
-    }
+    { ++count; }
     ~RefCounted() { --count; }
     int& count;
 };
@@ -73,4 +71,24 @@ auto constructedDestructorCleansUp =
         check(counter == 1);
     }
     check(counter == 0);
+};
+
+auto constructedPointerEquality = test("Constructed.pointer_equality") = []
+{
+    auto c = EA::Constructed<int>();
+    check(c == nullptr);
+
+    c.create(42);
+    check(c == c.get());
+    check(!(c == nullptr));
+};
+
+auto constructedValueEquality = test("Constructed.value_equality") = []
+{
+    auto c = EA::Constructed<int>();
+    auto value = 42;
+    check(!(c == value));
+
+    c.create(42);
+    check(c == value);
 };

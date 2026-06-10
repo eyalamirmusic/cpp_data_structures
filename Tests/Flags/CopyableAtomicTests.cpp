@@ -69,3 +69,14 @@ auto atomicWrapperStoreLoad = test("AtomicWrapper.store_and_load") = []
     w.store(7);
     check(w.load() == 7);
 };
+
+auto atomicLockFreeGuarantee = test("Atomic.lock_free_guarantee") = []
+{
+    auto a = EA::Atomic<int>(1);
+    check(a.is_lock_free());
+
+    //The guarantee itself is enforced at compile time: instantiating
+    //EA::Atomic<T> with a non-lock-free T (e.g. a 256-byte struct) fails
+    //with "Can only use safely with small lock free objects"
+    static_assert(EA::Atomics::isLockFree<int>());
+};

@@ -289,3 +289,14 @@ auto smallVecResizeGrowStaticDefaultConstructs =
     check(OperationTracker::counters.live() == 3);
     check(v.size() == 3);
 };
+
+auto smallVectorCopyFromRange = test("SmallVector.copyFrom_range") = []
+{
+    auto src = EA::SmallVector<int, 4> {1, 2, 3, 4};
+
+    auto dst = EA::SmallVector<int, 4>();
+    dst.copyFrom(src, 1, 2);
+    check(dst.size() == 2);
+    check(dst[0] == 2);
+    check(dst[1] == 3);
+};
