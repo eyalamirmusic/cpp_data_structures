@@ -52,7 +52,7 @@ private:
 
 //RAII guard for any lock with lock()/unlock() members (e.g. PrimitiveSpinLock
 //or RecursiveSpinLock). Acquires on construction, releases on destruction.
-template<typename LockType>
+template <typename LockType>
 class ScopedSpinLock
 {
 public:

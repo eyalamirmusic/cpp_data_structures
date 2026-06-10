@@ -1,7 +1,7 @@
 #pragma once
 
 #if defined(_MSC_VER)
-    #include <intrin.h>
+#include <intrin.h>
 #endif
 
 namespace EA
@@ -12,20 +12,19 @@ namespace EA
 //dispatch is encapsulated here and nowhere else in the library.
 inline void spinHint() noexcept
 {
-#if defined(__x86_64__) || defined(_M_X64) \
-    || defined(__i386__) || defined(_M_IX86)
-    #if defined(_MSC_VER)
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+#if defined(_MSC_VER)
     _mm_pause();
-    #else
+#else
     __builtin_ia32_pause();
-    #endif
-#elif defined(__aarch64__) || defined(_M_ARM64) \
-    || defined(__arm__) || defined(_M_ARM)
-    #if defined(_MSC_VER)
+#endif
+#elif defined(__aarch64__) || defined(_M_ARM64) || defined(__arm__)                 \
+    || defined(_M_ARM)
+#if defined(_MSC_VER)
     __yield();
-    #else
+#else
     __asm__ __volatile__("yield" ::: "memory");
-    #endif
+#endif
 #endif
 }
 } // namespace EA

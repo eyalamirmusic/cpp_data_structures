@@ -12,7 +12,8 @@ auto mapVectorInsertViaSubscript = test("MapVector.subscript_inserts") = []
     check(map.size() == 2);
 };
 
-auto mapVectorSubscriptReturnsExisting = test("MapVector.subscript_returns_existing") = []
+auto mapVectorSubscriptReturnsExisting =
+    test("MapVector.subscript_returns_existing") = []
 {
     auto map = EA::MapVector<int, std::string>();
     map[1] = "one";

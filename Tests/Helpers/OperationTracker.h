@@ -19,7 +19,7 @@ struct OperationCounters
     int totalConstructions() const noexcept
     {
         return defaultConstructions + valueConstructions + copyConstructions
-             + moveConstructions;
+               + moveConstructions;
     }
 
     //Net constructions - destructions since the last reset(). This equals the
@@ -83,14 +83,14 @@ public:
     int getValue() const noexcept { return value; }
     bool wasMovedFrom() const noexcept { return movedFrom; }
 
-    friend bool
-        operator==(const OperationTracker& lhs, const OperationTracker& rhs) noexcept
+    friend bool operator==(const OperationTracker& lhs,
+                           const OperationTracker& rhs) noexcept
     {
         return lhs.value == rhs.value;
     }
 
-    friend bool
-        operator<(const OperationTracker& lhs, const OperationTracker& rhs) noexcept
+    friend bool operator<(const OperationTracker& lhs,
+                          const OperationTracker& rhs) noexcept
     {
         return lhs.value < rhs.value;
     }

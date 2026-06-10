@@ -18,7 +18,9 @@ public:
         auto current = getCurrentID();
 
         if (id.load() != current)
-            while (!tryLock(current)) {}
+            while (!tryLock(current))
+            {
+            }
 
         ++holders;
     }

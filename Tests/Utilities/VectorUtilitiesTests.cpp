@@ -55,11 +55,11 @@ auto vectorsGetIndexIfStandalone = test("Vectors.getIndexIf_finds_first_match") 
 auto vectorsGetIndexOfComparison = test("Vectors.getIndexOfComparison") = []
 {
     auto v = std::vector<int> {5, 10, 15, 20};
-    auto idx = EA::Vectors::getIndexOfComparison(
-        v, [](const auto& e) { return e == 15; });
+    auto idx =
+        EA::Vectors::getIndexOfComparison(v, [](const auto& e) { return e == 15; });
     check(idx == 2);
-    auto missing = EA::Vectors::getIndexOfComparison(
-        v, [](const auto& e) { return e == 999; });
+    auto missing =
+        EA::Vectors::getIndexOfComparison(v, [](const auto& e) { return e == 999; });
     check(missing == -1);
 };
 
@@ -195,8 +195,7 @@ auto vectorsZipWithIndexed = test("Vectors.zipWithIndexed_passes_index") = []
     auto a = std::vector<int> {1, 2, 3};
     auto b = std::vector<int> {10, 20, 30};
     auto lastIndex = -1;
-    EA::Vectors::zipWithIndexed(a, b,
-                                [&](int, int, int idx) { lastIndex = idx; });
+    EA::Vectors::zipWithIndexed(a, b, [&](int, int, int idx) { lastIndex = idx; });
     check(lastIndex == 2);
 };
 

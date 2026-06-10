@@ -25,4 +25,4 @@ struct AnyRef
 
     std::any any;
 };
-}
+} // namespace EA

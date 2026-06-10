@@ -44,7 +44,8 @@ auto rawStorageDereference = test("RawStorage.operator_star_and_arrow") = []
     storage.destroy();
 };
 
-auto rawStorageForwardsArgs = test("RawStorage.create_forwards_constructor_args") = []
+auto rawStorageForwardsArgs =
+    test("RawStorage.create_forwards_constructor_args") = []
 {
     struct Multi
     {

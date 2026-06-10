@@ -26,7 +26,9 @@ public:
     Array() = default;
 
     Array(std::initializer_list<T> list)
-    { std::ranges::copy(list | std::views::take(Size), container.begin()); }
+    {
+        std::ranges::copy(list | std::views::take(Size), container.begin());
+    }
 
     Array(const Array& other) = default;
     Array(Array&& other) noexcept = default;
@@ -44,10 +46,14 @@ public:
     Array& operator=(const Array& other) = default;
 
     bool operator==(const Array& other) const
-    { return container == other.container; }
+    {
+        return container == other.container;
+    }
 
     bool operator!=(const Array& other) const
-    { return container != other.container; }
+    {
+        return container != other.container;
+    }
 
     bool empty() const noexcept { return container.empty(); }
 
@@ -58,7 +64,9 @@ public:
 
     T& operator[](int index) noexcept { return container[(size_t) index]; }
     const T& operator[](int index) const noexcept
-    { return container[(size_t) index]; }
+    {
+        return container[(size_t) index];
+    }
     T& get(int index) { return container[(size_t) index]; }
     const T& get(int index) const { return container[(size_t) index]; }
 
@@ -72,7 +80,9 @@ public:
     Const_Iterator cend() const { return container.cend(); }
 
     bool contains(const T& element) const
-    { return Vectors::contains(container, element); }
+    {
+        return Vectors::contains(container, element);
+    }
 
     ContainerType& getArray() { return container; }
     const ContainerType& getArray() const { return container; }
@@ -94,7 +104,9 @@ public:
 
     template <typename A>
     void fillFrom(A& other)
-    { Vectors::copyInto(other, container); }
+    {
+        Vectors::copyInto(other, container);
+    }
 
     int getLastElementIndex() const { return size() - 1; }
 
@@ -102,7 +114,9 @@ public:
 
     template <typename A>
     int getIndexOf(const A& element) const
-    { return Vectors::getIndexOf(container, element); }
+    {
+        return Vectors::getIndexOf(container, element);
+    }
 
     template <typename Predicate>
     void sort(const Predicate& pred, bool forward = true)

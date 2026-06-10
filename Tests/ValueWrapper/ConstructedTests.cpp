@@ -41,7 +41,9 @@ struct RefCounted
 {
     explicit RefCounted(int& counter)
         : count(counter)
-    { ++count; }
+    {
+        ++count;
+    }
     ~RefCounted() { --count; }
     int& count;
 };

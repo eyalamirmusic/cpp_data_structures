@@ -52,8 +52,7 @@ auto callbackWithArgDefault = test("Callback.default_returns_default_value") = [
 auto chainFunctionsTest = test("chainFunctions.invokes_in_order") = []
 {
     auto order = std::string();
-    auto chained = EA::chainFunctions([&] { order += "a"; },
-                                      [&] { order += "b"; });
+    auto chained = EA::chainFunctions([&] { order += "a"; }, [&] { order += "b"; });
     chained();
     check(order == "ab");
 };

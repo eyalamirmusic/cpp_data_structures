@@ -119,7 +119,9 @@ struct StaticVector : VectorBase
 
     template <typename... Args>
     T& emplace_back(Args&&... args)
-    { return create(std::forward<Args>(args)...); }
+    {
+        return create(std::forward<Args>(args)...);
+    }
 
     T& get(int index) noexcept { return *container[index]; }
     const T& operator[](int index) const noexcept { return get(index); }
@@ -143,16 +145,22 @@ struct StaticVector : VectorBase
 
     template <typename A>
     bool contains(const A& element) const
-    { return Vectors::contains(*this, element); }
+    {
+        return Vectors::contains(*this, element);
+    }
 
     ContainerType& getVector() { return container; }
 
     bool addIfNotThere(const T& element)
-    { return Vectors::addIfNotThere(*this, element); }
+    {
+        return Vectors::addIfNotThere(*this, element);
+    }
 
     template <typename A>
     int removeAllMatches(const A& element)
-    { return Vectors::removeAllMatches(*this, element); }
+    {
+        return Vectors::removeAllMatches(*this, element);
+    }
 
     void resize(size_t numElements) { resize((int) numElements); }
     void resize(int numElements)
@@ -175,23 +183,33 @@ struct StaticVector : VectorBase
 
     template <typename FloatType>
     FloatType getIndexAsRelative(int index) const
-    { return Vectors::getIndexAsRelative<FloatType>(*this, index); }
+    {
+        return Vectors::getIndexAsRelative<FloatType>(*this, index);
+    }
 
     template <typename FloatType>
     int getRelativeIndex(FloatType proportion) const
-    { return Vectors::getRelativeIndex(*this, proportion); }
+    {
+        return Vectors::getRelativeIndex(*this, proportion);
+    }
 
     template <typename FloatType>
     T& getRelative(FloatType proportion)
-    { return Vectors::getRelative(*this, proportion); }
+    {
+        return Vectors::getRelative(*this, proportion);
+    }
 
     template <typename FloatType>
     const T& getRelative(FloatType proportion) const
-    { return Vectors::getRelative(*this, proportion); }
+    {
+        return Vectors::getRelative(*this, proportion);
+    }
 
     template <typename FloatType>
     FloatType getRelativeIndexOf(const T& item) const
-    { return Vectors::getRelativeIndexOf<FloatType>(*this, item); }
+    {
+        return Vectors::getRelativeIndexOf<FloatType>(*this, item);
+    }
 
     template <typename... Args>
     void resizeAndCreate(int numElements, Args&&... args)
@@ -214,33 +232,49 @@ struct StaticVector : VectorBase
 
     template <typename A>
     void mixFrom(A& other)
-    { Vectors::mixFrom(*this, other); }
+    {
+        Vectors::mixFrom(*this, other);
+    }
 
     void fill(const T& value) { Vectors::fill(*this, value); }
 
     void fill(const T& value, int numItems)
-    { Vectors::fill(*this, value, numItems); }
+    {
+        Vectors::fill(*this, value, numItems);
+    }
 
     template <typename A>
     void addFrom(const A& other)
-    { Vectors::addFrom(*this, other); }
+    {
+        Vectors::addFrom(*this, other);
+    }
 
     template <typename A>
     void addFromIndexes(const A& other, std::initializer_list<int> indexes)
-    { Vectors::addFromIndexes(*this, other, indexes); }
+    {
+        Vectors::addFromIndexes(*this, other, indexes);
+    }
 
     template <typename A>
     void fillFrom(A& other)
-    { Vectors::copyInto(other, *this); }
+    {
+        Vectors::copyInto(other, *this);
+    }
 
     void copyFrom(const StaticVector& other, int startIndex, int numItems)
-    { Vectors::copyRange(*this, other, startIndex, numItems); }
+    {
+        Vectors::copyRange(*this, other, startIndex, numItems);
+    }
 
     void copyFrom(const StaticVector& other, int numItems)
-    { copyFrom(other, 0, numItems); }
+    {
+        copyFrom(other, 0, numItems);
+    }
 
     void removeRange(int startRange, int endRange)
-    { Vectors::removeRange(*this, startRange, endRange); }
+    {
+        Vectors::removeRange(*this, startRange, endRange);
+    }
 
     void erase(Iterator it) { removeAt(it - begin()); }
 
@@ -265,7 +299,9 @@ struct StaticVector : VectorBase
 
     template <typename Callable>
     bool eraseIf(Callable&& callable)
-    { return Vectors::eraseIf(*this, callable); }
+    {
+        return Vectors::eraseIf(*this, callable);
+    }
 
     void pop_back()
     {
@@ -275,7 +311,9 @@ struct StaticVector : VectorBase
 
     int getLastElementIndex() const noexcept { return size() - 1; }
     int getLastValidElementIndex() const noexcept
-    { return std::max(0, getLastElementIndex()); }
+    {
+        return std::max(0, getLastElementIndex());
+    }
 
     StaticVector& sort(bool forward = true)
     {
@@ -303,23 +341,33 @@ struct StaticVector : VectorBase
     //Also see OwnedVector helper functions for special cases
     template <typename ObjectType>
     int getIndexOf(const ObjectType& element) const
-    { return Vectors::getIndexOf(*this, element); }
+    {
+        return Vectors::getIndexOf(*this, element);
+    }
 
     template <typename ObjectType>
     const T* find(const ObjectType& element) const
-    { return Vectors::find(*this, element); }
+    {
+        return Vectors::find(*this, element);
+    }
 
     template <typename ObjectType>
     T* find(const ObjectType& element)
-    { return Vectors::find(*this, element); }
+    {
+        return Vectors::find(*this, element);
+    }
 
     template <typename Func>
     auto transform(Func&& func) const
-    { return Vectors::transform(*this, std::forward<Func>(func)); }
+    {
+        return Vectors::transform(*this, std::forward<Func>(func));
+    }
 
     template <typename Predicate>
     auto filter(Predicate&& predicate) const
-    { return Vectors::filter(*this, std::forward<Predicate>(predicate)); }
+    {
+        return Vectors::filter(*this, std::forward<Predicate>(predicate));
+    }
 
     template <typename Predicate>
     StaticVector& filterInPlace(Predicate&& predicate)
@@ -330,11 +378,15 @@ struct StaticVector : VectorBase
 
     template <typename Predicate>
     void copyFilteredTo(StaticVector& other, Predicate&& predicate) const
-    { Vectors::copyFilteredTo(*this, other, predicate); }
+    {
+        Vectors::copyFilteredTo(*this, other, predicate);
+    }
 
     template <typename Predicate>
     void addFilteredTo(StaticVector& other, Predicate&& predicate) const
-    { Vectors::addFilteredTo(*this, other, predicate); }
+    {
+        Vectors::addFilteredTo(*this, other, predicate);
+    }
 
     const T* data() const { return reinterpret_cast<const T*>(container.data()); }
     T* data() { return reinterpret_cast<T*>(container.data()); }

@@ -3,8 +3,7 @@
 
 using namespace nano;
 
-auto guiToRealTimePushGet =
-    test("GUIToRealTime.push_visible_from_realtime") = []
+auto guiToRealTimePushGet = test("GUIToRealTime.push_visible_from_realtime") = []
 {
     auto g = EA::GUIToRealTime<int, 5>();
     g.push(42);
@@ -18,8 +17,7 @@ auto guiToRealTimeFill = test("GUIToRealTime.fill") = []
     check(g.getRealTime() == 7);
 };
 
-auto sharedWithRTPushAndRead =
-    test("SharedWithRealTime.push_publishes_value") = []
+auto sharedWithRTPushAndRead = test("SharedWithRealTime.push_publishes_value") = []
 {
     auto shared = EA::SharedWithRealTime<int, 5>();
     *shared = 99;

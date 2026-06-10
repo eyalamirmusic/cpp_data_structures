@@ -18,15 +18,21 @@ constexpr FuncType for_each(Tuple&& t, FuncType&& f)
 template <typename Container, typename FuncType>
     requires requires(Container& c) { c.getMembers(); }
 constexpr void forEach(Container& container, FuncType&& f)
-{ for_each(container.getMembers(), std::forward<FuncType>(f)); }
+{
+    for_each(container.getMembers(), std::forward<FuncType>(f));
+}
 
 template <typename... Ts>
 [[nodiscard]] constexpr auto make_pointer_tuple()
-{ return std::tuple<Ts*...> {}; }
+{
+    return std::tuple<Ts*...> {};
+}
 
 template <typename... Args, typename FuncType>
 void callForAllTypes(FuncType&& func)
-{ (func(static_cast<Args*>(nullptr)), ...); }
+{
+    (func(static_cast<Args*>(nullptr)), ...);
+}
 
 template <typename... Args, typename T, typename FuncType>
 void callIfTypeMatching(T& obj, FuncType&& callback)
@@ -48,27 +54,39 @@ struct Container
 {
     template <typename FuncType>
     constexpr FuncType forEach(FuncType&& f)
-    { return for_each(elements, std::forward<FuncType>(f)); }
+    {
+        return for_each(elements, std::forward<FuncType>(f));
+    }
 
     template <typename FuncType>
     constexpr FuncType forEach(FuncType&& f) const
-    { return for_each(elements, std::forward<FuncType>(f)); }
+    {
+        return for_each(elements, std::forward<FuncType>(f));
+    }
 
     template <typename T>
     constexpr auto& get()
-    { return std::get<T>(elements); }
+    {
+        return std::get<T>(elements);
+    }
 
     template <typename T>
     constexpr auto& get() const
-    { return std::get<T>(elements); }
+    {
+        return std::get<T>(elements);
+    }
 
     template <int index>
     constexpr auto& get()
-    { return std::get<index>(elements); }
+    {
+        return std::get<index>(elements);
+    }
 
     template <int index>
     constexpr auto& get() const
-    { return std::get<index>(elements); }
+    {
+        return std::get<index>(elements);
+    }
 
     std::tuple<Args...> elements;
 };
@@ -78,5 +96,7 @@ namespace MixedTypes
 {
 template <class F, class... Args>
 void forEach(F&& f, Args&&... args)
-{ ((void) f(std::forward<Args>(args)), ...); }
+{
+    ((void) f(std::forward<Args>(args)), ...);
+}
 } // namespace MixedTypes

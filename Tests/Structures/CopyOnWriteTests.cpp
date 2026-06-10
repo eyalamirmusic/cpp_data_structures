@@ -16,8 +16,7 @@ auto cowCopyShares = test("CopyOnWrite.copy_shares_pointer") = []
     check(a.get() == b.get());
 };
 
-auto cowAssignDiverges =
-    test("CopyOnWrite.assign_from_value_replaces_storage") = []
+auto cowAssignDiverges = test("CopyOnWrite.assign_from_value_replaces_storage") = []
 {
     auto a = EA::CopyOnWrite<int>(1);
     auto b = a;

@@ -23,11 +23,15 @@ public:
 
     template <typename T>
     T get() const
-    { return static_cast<T>(size); }
+    {
+        return static_cast<T>(size);
+    }
 
     template <SizeCompatible T>
     operator T() const
-    { return get<T>(); }
+    {
+        return get<T>();
+    }
 
 private:
     size_t size = 0;

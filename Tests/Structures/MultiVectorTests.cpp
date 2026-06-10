@@ -31,8 +31,7 @@ auto flatMultiVectorIndex = test("FlatMultiVector.indexing_yields_view") = []
     check(m[1][2] == 30);
 };
 
-auto flatMultiVectorDimensionStart =
-    test("FlatMultiVector.getDimensionStart") = []
+auto flatMultiVectorDimensionStart = test("FlatMultiVector.getDimensionStart") = []
 {
     auto m = EA::FlatMultiVector<int>();
     m.resize(4, 5);

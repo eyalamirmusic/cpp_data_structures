@@ -10,19 +10,13 @@ auto equalsToAnyMatches = test("equalsToAny.returns_true_on_match") = []
 };
 
 auto equalsToAnyNoMatch = test("equalsToAny.returns_false_when_absent") = []
-{
-    check(!EA::equalsToAny(5, 1, 2, 3, 4));
-};
+{ check(!EA::equalsToAny(5, 1, 2, 3, 4)); };
 
 auto equalsToAllUniform = test("equalsToAll.returns_true_when_all_match") = []
-{
-    check(EA::equalsToAll(3, 3, 3, 3));
-};
+{ check(EA::equalsToAll(3, 3, 3, 3)); };
 
 auto equalsToAllMixed = test("equalsToAll.returns_false_when_any_differs") = []
-{
-    check(!EA::equalsToAll(3, 3, 4, 3));
-};
+{ check(!EA::equalsToAll(3, 3, 4, 3)); };
 
 auto toggleBoolFlip = test("toggleBool.flips_value") = []
 {

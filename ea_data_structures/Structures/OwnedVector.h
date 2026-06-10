@@ -62,7 +62,9 @@ public:
 
     template <typename ObjectType>
     bool contains(const ObjectType& elementToCheck)
-    { return getIndexOfElement(elementToCheck) >= 0; }
+    {
+        return getIndexOfElement(elementToCheck) >= 0;
+    }
 
     template <typename ObjectType>
     bool addElementIfNotThere(const ObjectType& elementToAdd)
