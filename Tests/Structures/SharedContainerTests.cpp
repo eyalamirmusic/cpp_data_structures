@@ -31,15 +31,15 @@ bool equals(const C& container, std::initializer_list<int> expected)
 }
 } // namespace
 
-#define SHARED_TEST(testName, caseFunc) \
-    auto reg_##caseFunc##_vector = nano::test("Shared." testName ".Vector") = \
-        [] { caseFunc<EA::Vector<int>>(); }; \
-    auto reg_##caseFunc##_small = \
-        nano::test("Shared." testName ".SmallVector") = \
-            [] { caseFunc<EA::SmallVector<int, 8>>(); }; \
-    auto reg_##caseFunc##_static = \
-        nano::test("Shared." testName ".StaticVector") = \
-            [] { caseFunc<EA::StaticVector<int, 16>>(); };
+#define SHARED_TEST(testName, caseFunc)                                             \
+    auto reg_##caseFunc##_vector = nano::test("Shared." testName ".Vector") = []    \
+    { caseFunc<EA::Vector<int>>(); };                                               \
+    auto reg_##caseFunc##_small =                                                   \
+        nano::test("Shared." testName ".SmallVector") = []                          \
+    { caseFunc<EA::SmallVector<int, 8>>(); };                                       \
+    auto reg_##caseFunc##_static =                                                  \
+        nano::test("Shared." testName ".StaticVector") = []                         \
+    { caseFunc<EA::StaticVector<int, 16>>(); };
 
 template <typename C>
 void fillCase()

@@ -211,7 +211,8 @@ struct SmallVector : VectorBase
     }
 
     template <typename A>
-    void mixFrom(A& other) { Vectors::mixFrom(*this, other); }
+    void mixFrom(A& other)
+    { Vectors::mixFrom(*this, other); }
 
     void fill(const T& value) { Vectors::fill(*this, value); }
 
@@ -219,7 +220,8 @@ struct SmallVector : VectorBase
     { Vectors::fill(*this, value, numItems); }
 
     template <typename A>
-    void addFrom(const A& other) { Vectors::addFrom(*this, other); }
+    void addFrom(const A& other)
+    { Vectors::addFrom(*this, other); }
 
     template <typename A>
     void addFromIndexes(const A& other, std::initializer_list<int> indexes)

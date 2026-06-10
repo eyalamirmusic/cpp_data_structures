@@ -60,9 +60,7 @@ constexpr T map(T value,
 
 template <typename T>
 constexpr T map(T value0To1, T targetRangeMin, T targetRangeMax) noexcept
-{
-    return linearMap(value0To1, T(0), T(1), targetRangeMin, targetRangeMax);
-}
+{ return linearMap(value0To1, T(0), T(1), targetRangeMin, targetRangeMax); }
 
 template <typename T>
 constexpr T mapTwoWayNormalized(T value, T ratio)
@@ -154,9 +152,7 @@ int getIndexIf(const ContainerType& container, F&& predicate)
 
 template <typename T>
 void reverse(T& container)
-{
-    std::ranges::reverse(container);
-}
+{ std::ranges::reverse(container); }
 
 template <typename T, typename Func>
 void stableSort(T& container, Func&& func, bool forward = true)
@@ -221,9 +217,7 @@ auto find(Container& container, const A& element)
 // container, If the element doesn't exist, this returns a nullptr
 template <typename Container, typename A>
 auto getElementPointer(Container& container, const A& element)
-{
-    return find(container, element);
-}
+{ return find(container, element); }
 
 // Gets a reference to an element that can be compared to an element of this
 // container. This will crash if an element isn't found!
@@ -232,9 +226,7 @@ auto getElementPointer(Container& container, const A& element)
 // instead and check for nullptr
 template <typename Container, typename A>
 auto& getElementRef(Container& container, const A& element)
-{
-    return *find(container, element);
-}
+{ return *find(container, element); }
 
 // Remove an element of the container at a certain index.
 // If this is called in a loop that iterates over the container, make sure you
@@ -250,9 +242,7 @@ void removeAt(T& container, int index)
 template <typename Container, typename Callable>
 bool eraseIf(Container& container, Callable callable)
 {
-    if constexpr (requires {
-                      container.erase(container.begin(), container.end());
-                  })
+    if constexpr (requires { container.erase(container.begin(), container.end()); })
     {
         auto prevSize = container.size();
         auto removed = std::ranges::remove_if(container, callable);
@@ -409,9 +399,7 @@ void removeRange(Container& container, int startRange, int endRange)
         || startRange >= endRange)
         return;
 
-    if constexpr (requires {
-                      container.erase(container.begin(), container.end());
-                  })
+    if constexpr (requires { container.erase(container.begin(), container.end()); })
     {
         container.erase(container.begin() + startRange,
                         container.begin() + endRange);
@@ -427,18 +415,14 @@ void removeRange(Container& container, int startRange, int endRange)
 // which must already be large enough to hold them
 template <typename Source, typename Target, typename Predicate>
 void copyFilteredTo(const Source& source, Target& target, Predicate&& predicate)
-{
-    std::copy_if(source.begin(), source.end(), target.begin(), predicate);
-}
+{ std::copy_if(source.begin(), source.end(), target.begin(), predicate); }
 
 // Appends the elements matching the predicate to the end of the target
 template <typename Source, typename Target, typename Predicate>
 void addFilteredTo(const Source& source, Target& target, Predicate&& predicate)
 {
-    std::copy_if(source.begin(),
-                 source.end(),
-                 std::back_inserter(target),
-                 predicate);
+    std::copy_if(
+        source.begin(), source.end(), std::back_inserter(target), predicate);
 }
 
 // Maps a valid index into the 0..1 range (0 = first element, 1 = last).
@@ -461,23 +445,17 @@ FloatType getIndexAsRelative(const Container& container, int index)
 // Maps a 0..1 proportion to an index into the container
 template <typename Container, typename FloatType>
 int getRelativeIndex(const Container& container, FloatType proportion)
-{
-    return Ranges::getIndexProprtion(proportion, (int) container.size());
-}
+{ return Ranges::getIndexProprtion(proportion, (int) container.size()); }
 
 template <typename Container, typename FloatType>
 auto& getRelative(Container& container, FloatType proportion)
-{
-    return container[getRelativeIndex(container, proportion)];
-}
+{ return container[getRelativeIndex(container, proportion)]; }
 
 // Returns the position of the first element equal to the given one as a
 // 0..1 proportion, or -1 if it isn't found
 template <typename FloatType, typename Container, typename A>
 FloatType getRelativeIndexOf(const Container& container, const A& item)
-{
-    return getIndexAsRelative<FloatType>(container, getIndexOf(container, item));
-}
+{ return getIndexAsRelative<FloatType>(container, getIndexOf(container, item)); }
 
 /**
  * Returns a fractional index representing the in-between position of a given
@@ -558,9 +536,8 @@ auto transform(const Container& container, Func&& f)
     typename Container::template Rebound<NewElem> result;
     result.resize(container.size());
 
-    std::ranges::transform(container,
-                           std::ranges::begin(result),
-                           std::forward<Func>(f));
+    std::ranges::transform(
+        container, std::ranges::begin(result), std::forward<Func>(f));
 
     return result;
 }
@@ -573,9 +550,8 @@ template <typename Container, typename Func>
 auto filter(const Container& container, Func&& predicate)
 {
     Container results;
-    std::ranges::copy_if(container,
-                         std::back_inserter(results),
-                         std::forward<Func>(predicate));
+    std::ranges::copy_if(
+        container, std::back_inserter(results), std::forward<Func>(predicate));
     return results;
 }
 
@@ -611,21 +587,15 @@ auto foldr(ContainerType&& container, Func func)
 
 template <typename Container, typename IndexType>
 constexpr auto sizeType(IndexType index)
-{
-    return static_cast<typename Container::size_type>(index);
-}
+{ return static_cast<typename Container::size_type>(index); }
 
 template <typename Container, typename IndexType>
 auto& get(Container& container, IndexType index)
-{
-    return container[sizeType<Container>(index)];
-}
+{ return container[sizeType<Container>(index)]; }
 
 template <typename Container, typename IndexType>
 const auto& get(const Container& container, IndexType index)
-{
-    return container[sizeType<Container>(index)];
-}
+{ return container[sizeType<Container>(index)]; }
 
 template <typename Container, typename SizeType, typename Factory>
 void resizeTo(Container& vec, SizeType newSize, Factory factory)
@@ -640,7 +610,7 @@ void resizeTo(Container& vec, SizeType newSize, Factory factory)
             vec.emplace_back(factory());
     }
     else if (vec.size() > s)
-        vec.erase(vec.begin() + (long)s, vec.end());
+        vec.erase(vec.begin() + (long) s, vec.end());
 }
 
 namespace Detail
@@ -658,7 +628,5 @@ struct isStdVectorHelper<std::vector<T, Alloc>> : std::true_type
 
 template <typename T>
 constexpr bool isStdVector()
-{
-    return Detail::isStdVectorHelper<T>::value;
-}
+{ return Detail::isStdVectorHelper<T>::value; }
 } // namespace EA::Vectors
