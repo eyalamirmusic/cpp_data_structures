@@ -5,7 +5,7 @@
 namespace EA
 {
 //Similar to SharedWithRealTime, but a non-owning version of the GUI data
-template <typename T, int fifoSize = 5>
+template <typename T, int fifoSize = 50>
 class GUIToRealTime
 {
 public:
@@ -16,6 +16,9 @@ public:
 
     //Call this from the GUI thread to update the data
     void push(const T& data) { fifo.push(data); }
+
+    //Like push(), but returns false and drops the value if the fifo is full
+    bool tryPush(const T& data) { return fifo.tryPush(data); }
 
     //Fills the FIFO with values of certain type:
     void fill(const T& data) noexcept { fifo.fill(data); }
@@ -49,7 +52,7 @@ private:
  * On the processor side, you need to call blockStarted() at the start of the block
  * And from then on the rt object will be safe to use with no thread contentions
 */
-template <typename T, int fifoSize = 5>
+template <typename T, int fifoSize = 50>
 class SharedWithRealTime
 {
 public:
@@ -60,6 +63,9 @@ public:
 
     //Call this from the GUI thread to update the data
     void push() { fifo.push(data); }
+
+    //Like push(), but returns false and drops the update if the fifo is full
+    bool tryPush() { return fifo.tryPush(data); }
 
     //Useful operators to call from the GUI only to reach the shared object
     T* operator->() { return &data; }
@@ -76,7 +82,7 @@ private:
 //The counterpart to SharedWithRealTime for the opposite direction: the audio/
 //realtime thread push()es values, and the GUI thread polls updateFlag (a
 //monotonic counter) to know when a new value is available, then pull()s it.
-template <typename T, int FifoSize = 5>
+template <typename T, int FifoSize = 50>
 struct RealTimeToGUI
 {
     RealTimeToGUI() = default;
@@ -86,6 +92,17 @@ struct RealTimeToGUI
     {
         fifo.push(data);
         updateFlag.update();
+    }
+
+    //Like push(), but returns false and drops the value if the fifo is full.
+    //The update flag is only bumped when the value was actually pushed
+    bool tryPush(const T& data) noexcept
+    {
+        if (!fifo.tryPush(data))
+            return false;
+
+        updateFlag.update();
+        return true;
     }
 
     T& pull() { return fifo.pull(); }
