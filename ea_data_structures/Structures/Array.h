@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <array>
 #include <concepts>
-#include <ranges>
 
 namespace EA
 {
@@ -27,7 +26,8 @@ public:
 
     Array(std::initializer_list<T> list)
     {
-        std::ranges::copy(list | std::views::take(Size), container.begin());
+        auto numToCopy = std::min((int) list.size(), Size);
+        std::copy_n(list.begin(), numToCopy, container.begin());
     }
 
     Array(const Array& other) = default;

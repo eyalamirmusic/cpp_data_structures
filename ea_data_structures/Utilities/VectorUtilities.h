@@ -21,7 +21,6 @@ Vectors::addIfNotThere(myVector, element).
 #include <cassert>
 #include <initializer_list>
 #include <iterator>
-#include <ranges>
 #include <type_traits>
 #include <vector>
 
@@ -118,13 +117,12 @@ int getIndexOfComparison(const T& container, Func&& comparisonFunc)
 template <typename T, typename A>
 int getIndexOf(const T& container, const A& element)
 {
-    auto it = std::ranges::find(container, element);
+    auto it = std::find(std::begin(container), std::end(container), element);
 
-    if (it == std::ranges::end(container))
+    if (it == std::end(container))
         return -1;
 
-    return static_cast<int>(
-        std::ranges::distance(std::ranges::begin(container), it));
+    return static_cast<int>(std::distance(std::begin(container), it));
 }
 
 template <typename T, typename A>
@@ -155,7 +153,7 @@ int getIndexIf(const ContainerType& container, F&& predicate)
 template <typename T>
 void reverse(T& container)
 {
-    std::ranges::reverse(container);
+    std::reverse(std::begin(container), std::end(container));
 }
 
 template <typename T, typename Func>
@@ -198,8 +196,8 @@ void sort(T& container, COMPARE compare, bool forward = true)
 template <typename T, typename A>
 bool contains(const T& container, const A& elementToCheck)
 {
-    return std::ranges::find(container, elementToCheck)
-           != std::ranges::end(container);
+    return std::find(std::begin(container), std::end(container), elementToCheck)
+           != std::end(container);
 }
 
 // Gets a pointer to the first element comparing equal to the given value.
@@ -253,8 +251,8 @@ bool eraseIf(Container& container, Callable callable)
     if constexpr (requires { container.erase(container.begin(), container.end()); })
     {
         auto prevSize = container.size();
-        auto removed = std::ranges::remove_if(container, callable);
-        container.erase(removed.begin(), removed.end());
+        auto removed = std::remove_if(container.begin(), container.end(), callable);
+        container.erase(removed, container.end());
 
         return prevSize != container.size();
     }
@@ -334,7 +332,7 @@ template <typename T, typename A>
 void copyInto(T& source, A& target)
 {
     target.resize(source.size());
-    std::ranges::copy(source, std::ranges::begin(target));
+    std::copy(std::begin(source), std::end(source), std::begin(target));
 }
 
 // Assigns the given value to every element of the container
@@ -552,8 +550,10 @@ auto transform(const Container& container, Func&& f)
     typename Container::template Rebound<NewElem> result;
     result.resize(container.size());
 
-    std::ranges::transform(
-        container, std::ranges::begin(result), std::forward<Func>(f));
+    std::transform(std::begin(container),
+                   std::end(container),
+                   std::begin(result),
+                   std::forward<Func>(f));
 
     return result;
 }
@@ -566,8 +566,10 @@ template <typename Container, typename Func>
 auto filter(const Container& container, Func&& predicate)
 {
     Container results;
-    std::ranges::copy_if(
-        container, std::back_inserter(results), std::forward<Func>(predicate));
+    std::copy_if(std::begin(container),
+                 std::end(container),
+                 std::back_inserter(results),
+                 std::forward<Func>(predicate));
     return results;
 }
 
