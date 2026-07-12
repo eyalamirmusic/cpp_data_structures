@@ -376,7 +376,8 @@ public:
     int getLastElementIndex() const noexcept { return size() - 1; }
     int getLastValidElementIndex() const noexcept
     {
-        return std::max(0, getLastElementIndex());
+        auto index = getLastElementIndex();
+        return index > 0 ? index : 0;
     }
 
     Vector& stableSort(bool forward = true)
@@ -408,9 +409,9 @@ public:
     bool shift(int offset) noexcept
     {
         if (offset > 0)
-            std::rotate(rbegin(), rbegin() + offset, rend());
+            Vectors::rotate(rbegin(), rbegin() + offset, rend());
         else if (offset < 0)
-            std::rotate(begin(), begin() - offset, end());
+            Vectors::rotate(begin(), begin() - offset, end());
 
         return offset != 0;
     }

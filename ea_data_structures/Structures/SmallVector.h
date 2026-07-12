@@ -2,6 +2,7 @@
 
 #include "StaticVector.h"
 #include "Vector.h"
+#include <algorithm>
 
 namespace EA
 {

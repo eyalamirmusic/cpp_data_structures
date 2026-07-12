@@ -3,6 +3,7 @@
 #include "../ValueWrapper/RawStorage.h"
 #include "Array.h"
 #include "Vector.h"
+#include <algorithm>
 
 namespace EA
 {

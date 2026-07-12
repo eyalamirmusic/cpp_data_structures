@@ -1,4 +1,6 @@
 #include <NanoTest/NanoTest.h>
+#include <algorithm>
+#include <memory>
 #include <ea_data_structures/Structures/StaticVector.h>
 #include <ea_data_structures/Structures/Vector.h>
 #include <ea_data_structures/Utilities/VectorUtilities.h>
@@ -222,4 +224,132 @@ auto vectorsRemoveAllMatches = test("Vectors.removeAllMatches_counts") = []
     auto removed = EA::Vectors::removeAllMatches(v, target);
     check(removed == 3);
     check(v.size() == 2u);
+};
+
+auto vectorsStableSortIsStable = test("Vectors.stableSort_keeps_ties_in_order") = []
+{
+    auto v = std::vector<std::pair<int, int>> {};
+
+    for (int index = 0; index < 100; ++index)
+        v.push_back({index % 5, index});
+
+    EA::Vectors::stableSort(
+        v, [](const auto& a, const auto& b) { return a.first < b.first; });
+
+    for (size_t index = 1; index < v.size(); ++index)
+    {
+        check(v[index - 1].first <= v[index].first);
+
+        if (v[index - 1].first == v[index].first)
+            check(v[index - 1].second < v[index].second);
+    }
+};
+
+auto vectorsStableSortMatchesStd =
+    test("Vectors.stableSort_matches_std_on_large_input") = []
+{
+    auto v = std::vector<int> {};
+    auto seed = 12345u;
+
+    for (int index = 0; index < 5000; ++index)
+    {
+        seed = seed * 1664525u + 1013904223u;
+        v.push_back((int) (seed % 1000u));
+    }
+
+    auto expected = v;
+    std::sort(expected.begin(), expected.end());
+
+    EA::Vectors::stableSort(v);
+    check(v == expected);
+
+    EA::Vectors::stableSort(v, false);
+    std::reverse(expected.begin(), expected.end());
+    check(v == expected);
+};
+
+auto vectorsStableSortMoveOnly = test("Vectors.stableSort_move_only_elements") = []
+{
+    auto v = std::vector<std::unique_ptr<int>> {};
+
+    for (int index = 50; index > 0; --index)
+        v.push_back(std::make_unique<int>(index));
+
+    EA::Vectors::stableSort(v, [](const auto& a, const auto& b) { return *a < *b; });
+
+    for (int index = 0; index < 50; ++index)
+        check(*v[(size_t) index] == index + 1);
+};
+
+auto vectorsSortMatchesStd =
+    test("Vectors.sort_matches_std_sort_on_large_input") = []
+{
+    auto v = std::vector<int> {};
+    auto seed = 98765u;
+
+    for (int index = 0; index < 10000; ++index)
+    {
+        seed = seed * 1664525u + 1013904223u;
+        v.push_back((int) (seed % 500u));
+    }
+
+    auto expected = v;
+    std::sort(expected.begin(), expected.end());
+
+    EA::Vectors::sort(v);
+    check(v == expected);
+
+    EA::Vectors::sort(v, false);
+    std::reverse(expected.begin(), expected.end());
+    check(v == expected);
+};
+
+auto vectorsSortAdversarialPatterns =
+    test("Vectors.sort_matches_std_sort_on_adversarial_patterns") = []
+{
+    auto patterns = std::vector<std::vector<int>> {};
+    auto sorted = std::vector<int> {};
+    auto reversed = std::vector<int> {};
+    auto allEqual = std::vector<int> {};
+    auto organPipe = std::vector<int> {};
+    auto fewUniques = std::vector<int> {};
+
+    for (int index = 0; index < 3000; ++index)
+    {
+        sorted.push_back(index);
+        reversed.push_back(3000 - index);
+        allEqual.push_back(42);
+        organPipe.push_back(index < 1500 ? index : 3000 - index);
+        fewUniques.push_back(index % 3);
+    }
+
+    patterns.push_back(sorted);
+    patterns.push_back(reversed);
+    patterns.push_back(allEqual);
+    patterns.push_back(organPipe);
+    patterns.push_back(fewUniques);
+    patterns.push_back({});
+    patterns.push_back({7});
+
+    for (auto& pattern: patterns)
+    {
+        auto expected = pattern;
+        std::sort(expected.begin(), expected.end());
+
+        EA::Vectors::sort(pattern);
+        check(pattern == expected);
+    }
+};
+
+auto vectorsSortMoveOnly = test("Vectors.sort_move_only_elements") = []
+{
+    auto v = std::vector<std::unique_ptr<int>> {};
+
+    for (int index = 50; index > 0; --index)
+        v.push_back(std::make_unique<int>(index));
+
+    EA::Vectors::sort(v, [](const auto& a, const auto& b) { return *a < *b; });
+
+    for (int index = 0; index < 50; ++index)
+        check(*v[(size_t) index] == index + 1);
 };

@@ -3,7 +3,6 @@
 //A wrapper around std::array that uses int instead of size_t, and adds some useful helper functions
 
 #include "../Utilities/VectorUtilities.h"
-#include <algorithm>
 #include <array>
 #include <concepts>
 
@@ -26,8 +25,11 @@ public:
 
     Array(std::initializer_list<T> list)
     {
-        auto numToCopy = std::min((int) list.size(), Size);
-        std::copy_n(list.begin(), numToCopy, container.begin());
+        auto numToCopy = (int) list.size() < Size ? (int) list.size() : Size;
+        auto out = container.begin();
+
+        for (auto it = list.begin(); it != list.begin() + numToCopy; ++it)
+            *out++ = *it;
     }
 
     Array(const Array& other) = default;
@@ -124,7 +126,7 @@ public:
         std::sort(begin(), end(), pred);
 
         if (!forward)
-            std::reverse(begin(), end());
+            Vectors::reverse(container);
     }
 
     const T* data() const { return container.data(); }
