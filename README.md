@@ -13,7 +13,7 @@ Wrappers around the STL ones with int semantics instead of size_t, and many help
 ```cpp
 EA::Vector<int> vec;
 
-vec.sort;
+vec.sort();
 
 if (vec.contains(element))
   doSomething();
