@@ -1,8 +1,12 @@
 #pragma once
 
 #include <algorithm>
-#include "../Structures/Vector.h"
-#include <iostream>
+#include <cstddef>
+#include <memory>
+#include <memory_resource>
+#include <stdexcept>
+#include <utility>
+#include <vector>
 
 namespace EA::Allocators
 {
