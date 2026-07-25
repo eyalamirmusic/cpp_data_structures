@@ -1,6 +1,7 @@
 #pragma once
 
-#include <type_traits>
+#include <cstddef>
+#include <utility>
 
 namespace EA
 {
@@ -11,7 +12,10 @@ template <typename T>
 class FixedDynamicArray
 {
 public:
-    using Aligned = std::aligned_storage_t<sizeof(T), alignof(T)>;
+    struct alignas(alignof(T)) Aligned
+    {
+        std::byte data[sizeof(T)];
+    };
 
     template <typename... ARGS>
     explicit FixedDynamicArray(int sizeToUse, ARGS&&... args)

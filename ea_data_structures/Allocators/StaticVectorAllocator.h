@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cassert>
+#include <cstddef>
+#include <new>
 
 namespace EA::Allocators::StaticVector
 {
@@ -40,7 +42,7 @@ struct Allocator
 
     bool operator==(const Allocator&) const { return false; }
 
-    std::aligned_storage_t<sizeof(T), alignof(T)> buffer[MaxSize];
+    alignas(T) std::byte buffer[MaxSize * sizeof(T)];
 };
 
 } // namespace EA::Allocators::StaticVector

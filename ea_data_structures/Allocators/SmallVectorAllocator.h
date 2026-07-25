@@ -2,6 +2,8 @@
 
 #include "DefaultAllocators.h"
 
+#include <cstddef>
+
 namespace EA::Allocators::SmallVector
 {
 struct Base
@@ -65,7 +67,7 @@ struct Allocator : Base
         return isSmallBuffer == !other.isSmallBuffer;
     }
 
-    std::aligned_storage_t<sizeof(T), alignof(T)> buffer[MaxSize];
+    alignas(T) std::byte buffer[MaxSize * sizeof(T)];
 };
 
 } // namespace EA::Allocators::SmallVector
