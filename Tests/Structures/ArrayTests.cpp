@@ -146,3 +146,16 @@ auto arrayDeducedSingleElement = test("Array.deduced_size_single_element") = []
     check(a.size() == 1);
     check(a[0] == 42);
 };
+
+auto arrayPredicateHelpers = test("Array.predicate_helper_members") = []
+{
+    auto values = EA::Array<int, 4> {1, 2, 3, 4};
+
+    check(values.getIndexIf([](int value) { return value > 2; }) == 2);
+    check(values.countIf([](int value) { return value % 2 == 0; }) == 2);
+    check(*values.findIf([](int value) { return value == 3; }) == 3);
+    check(values.findIf([](int value) { return value == 99; }) == nullptr);
+
+    *values.findIf([](int value) { return value == 3; }) = 30;
+    check(values[2] == 30);
+};

@@ -35,6 +35,7 @@ BEGIN_JUCE_MODULE_DECLARATION
 #include "Structures/CircularBuffer.h"
 #include "Structures/Span.h"
 #include "Structures/BufferView.h"
+#include "Structures/PlanarView.h"
 #include "Structures/Filtered.h"
 #include "Structures/SpecialVectors.h"
 #include "Structures/StaticVector.h"

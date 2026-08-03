@@ -121,6 +121,30 @@ public:
     }
 
     template <typename Predicate>
+    int getIndexIf(Predicate&& predicate) const
+    {
+        return Vectors::getIndexIf(container, std::forward<Predicate>(predicate));
+    }
+
+    template <typename Predicate>
+    int countIf(Predicate&& predicate) const
+    {
+        return Vectors::countIf(container, std::forward<Predicate>(predicate));
+    }
+
+    template <typename Predicate>
+    const T* findIf(Predicate&& predicate) const
+    {
+        return Vectors::findIf(*this, std::forward<Predicate>(predicate));
+    }
+
+    template <typename Predicate>
+    T* findIf(Predicate&& predicate)
+    {
+        return Vectors::findIf(*this, std::forward<Predicate>(predicate));
+    }
+
+    template <typename Predicate>
     void sort(const Predicate& pred, bool forward = true)
     {
         std::sort(begin(), end(), pred);

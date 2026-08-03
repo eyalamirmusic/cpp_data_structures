@@ -213,10 +213,41 @@ public:
         return Vectors::getIndexIf(*this, std::forward<Predicate>(predicate));
     }
 
+    template <typename Predicate>
+    int countIf(Predicate&& predicate) const
+    {
+        return Vectors::countIf(*this, std::forward<Predicate>(predicate));
+    }
+
     template <typename A>
     T* find(const A& element) const
     {
         return Vectors::find(*this, element);
+    }
+
+    template <typename Predicate>
+    T* findIf(Predicate&& predicate) const
+    {
+        return Vectors::findIf(*this, std::forward<Predicate>(predicate));
+    }
+
+    template <typename Value, typename KeyOf = Vectors::Identity>
+    int lowerBoundIndex(const Value& value, KeyOf keyOf = {}) const
+    {
+        return Vectors::lowerBoundIndex(*this, value, keyOf);
+    }
+
+    template <typename Value, typename KeyOf = Vectors::Identity>
+    int upperBoundIndex(const Value& value, KeyOf keyOf = {}) const
+    {
+        return Vectors::upperBoundIndex(*this, value, keyOf);
+    }
+
+    // The half-open range [first, last) as its own view
+    constexpr Span between(SizeType first, SizeType last) const noexcept
+    {
+        auto start = first.get<int>();
+        return {ptr + start, last.get<int>() - start};
     }
 
     template <typename FloatType>

@@ -433,6 +433,54 @@ public:
         return Vectors::getIndexOf(container, element);
     }
 
+    template <typename Predicate>
+    int getIndexIf(Predicate&& predicate) const
+    {
+        return Vectors::getIndexIf(container, std::forward<Predicate>(predicate));
+    }
+
+    template <typename Predicate>
+    int countIf(Predicate&& predicate) const
+    {
+        return Vectors::countIf(container, std::forward<Predicate>(predicate));
+    }
+
+    template <typename Predicate>
+    const T* findIf(Predicate&& predicate) const
+    {
+        return Vectors::findIf(*this, std::forward<Predicate>(predicate));
+    }
+
+    template <typename Predicate>
+    T* findIf(Predicate&& predicate)
+    {
+        return Vectors::findIf(*this, std::forward<Predicate>(predicate));
+    }
+
+    // Inserts into an already-sorted vector, returning the index it landed at
+    template <typename Compare>
+    int insertSorted(const T& element, Compare compare)
+    {
+        return Vectors::insertSorted(*this, element, compare);
+    }
+
+    int insertSorted(const T& element)
+    {
+        return Vectors::insertSorted(*this, element);
+    }
+
+    template <typename Value, typename KeyOf = Vectors::Identity>
+    int lowerBoundIndex(const Value& value, KeyOf keyOf = {}) const
+    {
+        return Vectors::lowerBoundIndex(*this, value, keyOf);
+    }
+
+    template <typename Value, typename KeyOf = Vectors::Identity>
+    int upperBoundIndex(const Value& value, KeyOf keyOf = {}) const
+    {
+        return Vectors::upperBoundIndex(*this, value, keyOf);
+    }
+
     template <typename ObjectType>
     const T* find(const ObjectType& element) const
     {

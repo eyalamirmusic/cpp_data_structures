@@ -147,6 +147,21 @@ int getIndexIf(const ContainerType& container, F&& predicate)
     return -1;
 }
 
+/** Counts the elements which satisfy the given predicate */
+template <typename ContainerType, typename F>
+int countIf(const ContainerType& container, F&& predicate)
+{
+    int total = 0;
+
+    for (auto& element: container)
+    {
+        if (predicate(element))
+            ++total;
+    }
+
+    return total;
+}
+
 template <typename It>
 void reverseRange(It first, It last)
 {
@@ -208,6 +223,120 @@ void sort(T& container, COMPARE compare, bool forward = true)
         reverse(container);
 }
 
+// Maps an element to the value a binary search compares against. The default
+// for a container sorted by the elements themselves
+struct Identity
+{
+    template <typename T>
+    const T& operator()(const T& element) const noexcept
+    {
+        return element;
+    }
+};
+
+// The index of the first element whose key is not less than the value, or
+// size() if every key is smaller. The container must already be sorted by
+// that key.
+//
+// Index-based rather than iterator-based, to match the rest of this library -
+// the result is ready to pass to insert(), removeAt() or Span::subspan()
+template <typename Container, typename Value, typename KeyOf = Identity>
+int lowerBoundIndex(const Container& container, const Value& value, KeyOf keyOf = {})
+{
+    int first = 0;
+    int count = (int) container.size();
+
+    while (count > 0)
+    {
+        auto half = count / 2;
+        auto middle = first + half;
+
+        if (keyOf(container[middle]) < value)
+        {
+            first = middle + 1;
+            count -= half + 1;
+        }
+        else
+        {
+            count = half;
+        }
+    }
+
+    return first;
+}
+
+// The index of the first element whose key is greater than the value, or
+// size() if none is. Differs from lowerBoundIndex only in where it lands
+// among equal keys, which is what makes it the right bound for a half-open
+// range that includes them
+template <typename Container, typename Value, typename KeyOf = Identity>
+int upperBoundIndex(const Container& container, const Value& value, KeyOf keyOf = {})
+{
+    int first = 0;
+    int count = (int) container.size();
+
+    while (count > 0)
+    {
+        auto half = count / 2;
+        auto middle = first + half;
+
+        if (value < keyOf(container[middle]))
+        {
+            count = half;
+        }
+        else
+        {
+            first = middle + 1;
+            count -= half + 1;
+        }
+    }
+
+    return first;
+}
+
+// Inserts into an already-sorted container, keeping it sorted, and returns
+// the index it landed at.
+//
+// Equal elements go after the ones already there, so repeatedly inserting
+// preserves insertion order among them
+template <typename Container, typename T, typename Compare>
+int insertSorted(Container& container, const T& element, Compare compare)
+{
+    int first = 0;
+    int count = (int) container.size();
+
+    while (count > 0)
+    {
+        auto half = count / 2;
+        auto middle = first + half;
+
+        if (compare(element, container[middle]))
+        {
+            count = half;
+        }
+        else
+        {
+            first = middle + 1;
+            count -= half + 1;
+        }
+    }
+
+    // EA's containers insert by index, the standard ones by iterator
+    if constexpr (requires { container.insert(first, element); })
+        container.insert(first, element);
+    else
+        container.insert(container.begin() + first, element);
+
+    return first;
+}
+
+template <typename Container, typename T>
+int insertSorted(Container& container, const T& element)
+{
+    return insertSorted(
+        container, element, [](const T& a, const T& b) { return a < b; });
+}
+
 // Check if an element that be compared to elements of this container exist.
 template <typename T, typename A>
 bool contains(const T& container, const A& elementToCheck)
@@ -223,6 +352,24 @@ auto find(Container& container, const A& element)
     using Pointer = decltype(&container[0]);
 
     auto index = getIndexOf(container, element);
+
+    if (index >= 0)
+        return Pointer(&container[index]);
+
+    return Pointer(nullptr);
+}
+
+// Gets a pointer to the first element satisfying the given predicate.
+// If no element matches, this returns a nullptr.
+//
+// This is the predicate counterpart of find() - use it when the element is
+// identified by one of its fields rather than by comparing the whole element
+template <typename Container, typename Predicate>
+auto findIf(Container& container, Predicate&& predicate)
+{
+    using Pointer = decltype(&container[0]);
+
+    auto index = getIndexIf(container, std::forward<Predicate>(predicate));
 
     if (index >= 0)
         return Pointer(&container[index]);

@@ -465,3 +465,45 @@ auto spanIsSmall = test("Span.is_a_pointer_and_a_size") = []
     static_assert(sizeof(EA::Span<int>) <= sizeof(void*) + sizeof(int) * 2);
     static_assert(std::is_trivially_copyable_v<EA::Span<int>>);
 };
+
+auto spanCountIf = test("Span.countIf_over_a_view") = []
+{
+    auto values = EA::Vector<int> {1, 2, 3, 4, 5, 6};
+    auto span = EA::Span<const int> {values};
+
+    check(span.countIf([](int value) { return value % 2 == 0; }) == 3);
+    check(span.subspan(0, 2).countIf([](int value) { return value % 2 == 0; }) == 1);
+};
+
+auto spanFindIf = test("Span.findIf_over_a_view") = []
+{
+    auto values = EA::Vector<int> {1, 2, 3};
+    auto span = EA::Span<int> {values};
+
+    *span.findIf([](int value) { return value == 2; }) = 20;
+
+    check(values[1] == 20);
+    check(span.findIf([](int value) { return value == 99; }) == nullptr);
+};
+
+auto spanBounds = test("Span.binary_search_over_a_view") = []
+{
+    auto values = EA::Vector<int> {0, 2, 2, 2, 4};
+    auto span = EA::Span<const int> {values};
+
+    check(span.lowerBoundIndex(2) == 1);
+    check(span.upperBoundIndex(2) == 4);
+};
+
+auto spanBetween = test("Span.between_is_a_half_open_index_range") = []
+{
+    auto values = EA::Vector<int> {0, 1, 2, 3, 4};
+    auto span = EA::Span<const int> {values};
+
+    auto middle = span.between(1, 4);
+
+    check(middle.size() == 3);
+    check(middle.front() == 1);
+    check(middle.back() == 3);
+    check(span.between(2, 2).empty());
+};

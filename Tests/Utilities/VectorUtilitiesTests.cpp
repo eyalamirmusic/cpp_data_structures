@@ -353,3 +353,171 @@ auto vectorsSortMoveOnly = test("Vectors.sort_move_only_elements") = []
     for (int index = 0; index < 50; ++index)
         check(*v[(size_t) index] == index + 1);
 };
+
+namespace
+{
+struct Item
+{
+    int key = 0;
+    int payload = 0;
+
+    bool operator==(const Item& other) const = default;
+};
+
+int keyOfItem(const Item& item)
+{
+    return item.key;
+}
+} // namespace
+
+auto vectorsCountIf = test("Vectors.countIf_counts_every_match") = []
+{
+    auto v = std::vector<int> {1, 2, 3, 4, 5, 6};
+
+    check(EA::Vectors::countIf(v, [](int value) { return value % 2 == 0; }) == 3);
+    check(EA::Vectors::countIf(v, [](int value) { return value > 100; }) == 0);
+    check(EA::Vectors::countIf(std::vector<int> {}, [](int) { return true; }) == 0);
+};
+
+auto vectorsFindIfMatch = test("Vectors.findIf_returns_the_first_match") = []
+{
+    auto v = EA::Vector<Item> {{1, 10}, {2, 20}, {2, 30}};
+
+    auto* found = EA::Vectors::findIf(v, [](const Item& i) { return i.key == 2; });
+
+    check(found != nullptr);
+    check(found->payload == 20);
+};
+
+auto vectorsFindIfNoMatch =
+    test("Vectors.findIf_returns_null_when_nothing_matches") = []
+{
+    auto v = EA::Vector<Item> {{1, 10}};
+
+    check(EA::Vectors::findIf(v, [](const Item& i) { return i.key == 9; })
+          == nullptr);
+};
+
+auto vectorsFindIfWritesThrough =
+    test("Vectors.findIf_is_mutable_on_a_mutable_container") = []
+{
+    auto v = EA::Vector<Item> {{1, 10}, {2, 20}};
+
+    EA::Vectors::findIf(v, [](const Item& i) { return i.key == 2; })->payload = 99;
+
+    check(v[1].payload == 99);
+};
+
+auto vectorsLowerBound = test("Vectors.lowerBoundIndex_lands_before_equal_keys") = []
+{
+    auto v = std::vector<int> {0, 2, 2, 2, 4};
+
+    check(EA::Vectors::lowerBoundIndex(v, -1) == 0);
+    check(EA::Vectors::lowerBoundIndex(v, 0) == 0);
+    check(EA::Vectors::lowerBoundIndex(v, 1) == 1);
+    check(EA::Vectors::lowerBoundIndex(v, 2) == 1);
+    check(EA::Vectors::lowerBoundIndex(v, 3) == 4);
+    check(EA::Vectors::lowerBoundIndex(v, 4) == 4);
+    check(EA::Vectors::lowerBoundIndex(v, 5) == 5);
+    check(EA::Vectors::lowerBoundIndex(std::vector<int> {}, 5) == 0);
+};
+
+auto vectorsUpperBound = test("Vectors.upperBoundIndex_lands_after_equal_keys") = []
+{
+    auto v = std::vector<int> {0, 2, 2, 2, 4};
+
+    check(EA::Vectors::upperBoundIndex(v, -1) == 0);
+    check(EA::Vectors::upperBoundIndex(v, 0) == 1);
+    check(EA::Vectors::upperBoundIndex(v, 1) == 1);
+    check(EA::Vectors::upperBoundIndex(v, 2) == 4);
+    check(EA::Vectors::upperBoundIndex(v, 4) == 5);
+    check(EA::Vectors::upperBoundIndex(v, 5) == 5);
+    check(EA::Vectors::upperBoundIndex(std::vector<int> {}, 5) == 0);
+};
+
+auto vectorsBoundsWithKey = test("Vectors.bounds_search_by_a_projected_key") = []
+{
+    auto v = EA::Vector<Item> {{0, 0}, {2, 1}, {2, 2}, {4, 3}};
+
+    check(EA::Vectors::lowerBoundIndex(v, 2, keyOfItem) == 1);
+    check(EA::Vectors::upperBoundIndex(v, 2, keyOfItem) == 3);
+    check(EA::Vectors::lowerBoundIndex(v, 3, keyOfItem) == 3);
+};
+
+auto vectorsBoundsMatchLinearScan =
+    test("Vectors.bounds_agree_with_a_linear_scan") = []
+{
+    auto v = std::vector<int> {};
+
+    for (int index = 0; index < 200; ++index)
+        v.push_back(index / 3);
+
+    for (int value = -1; value < 70; ++value)
+    {
+        auto lower = 0;
+        while (lower < (int) v.size() && v[(size_t) lower] < value)
+            ++lower;
+
+        auto upper = 0;
+        while (upper < (int) v.size() && !(value < v[(size_t) upper]))
+            ++upper;
+
+        check(EA::Vectors::lowerBoundIndex(v, value) == lower);
+        check(EA::Vectors::upperBoundIndex(v, value) == upper);
+    }
+};
+
+auto vectorsInsertSorted =
+    test("Vectors.insertSorted_keeps_the_container_sorted") = []
+{
+    auto v = EA::Vector<int> {};
+
+    for (auto value: {5, 1, 4, 1, 3})
+        v.insertSorted(value);
+
+    check(v == EA::Vector<int> {1, 1, 3, 4, 5});
+};
+
+auto vectorsInsertSortedIndex =
+    test("Vectors.insertSorted_returns_where_it_landed") = []
+{
+    auto v = EA::Vector<int> {1, 3, 5};
+
+    check(v.insertSorted(0) == 0);
+    check(v.insertSorted(9) == 3 + 1);
+    check(v.insertSorted(4) == 3);
+};
+
+auto vectorsInsertSortedStable =
+    test("Vectors.insertSorted_puts_equal_elements_last") = []
+{
+    auto v = EA::Vector<Item> {};
+    auto byKey = [](const Item& a, const Item& b) { return a.key < b.key; };
+
+    v.insertSorted({1, 10}, byKey);
+    v.insertSorted({1, 20}, byKey);
+    v.insertSorted({1, 30}, byKey);
+
+    check(v[0].payload == 10);
+    check(v[1].payload == 20);
+    check(v[2].payload == 30);
+};
+
+auto vectorsInsertSortedStdVector = test("Vectors.insertSorted_on_std_vector") = []
+{
+    auto v = std::vector<int> {1, 3};
+
+    check(EA::Vectors::insertSorted(v, 2) == 1);
+    check(v == std::vector<int> {1, 2, 3});
+};
+
+auto vectorMemberPredicateHelpers = test("Vector.predicate_helper_members") = []
+{
+    auto v = EA::Vector<Item> {{1, 10}, {2, 20}, {2, 30}};
+
+    check(v.getIndexIf([](const Item& i) { return i.key == 2; }) == 1);
+    check(v.countIf([](const Item& i) { return i.key == 2; }) == 2);
+    check(v.findIf([](const Item& i) { return i.key == 2; })->payload == 20);
+    check(v.lowerBoundIndex(2, keyOfItem) == 1);
+    check(v.upperBoundIndex(2, keyOfItem) == 3);
+};
