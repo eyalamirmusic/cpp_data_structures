@@ -33,6 +33,7 @@ BEGIN_JUCE_MODULE_DECLARATION
 #include "Structures/MapVector.h"
 #include "Structures/SharedGUIData.h"
 #include "Structures/CircularBuffer.h"
+#include "Structures/Span.h"
 #include "Structures/BufferView.h"
 #include "Structures/Filtered.h"
 #include "Structures/SpecialVectors.h"

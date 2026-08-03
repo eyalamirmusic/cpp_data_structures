@@ -13,22 +13,22 @@ concept SizeCompatible = std::integral<T> && !std::same_as<T, bool>;
 class SizeType
 {
 public:
-    SizeType() = default;
+    constexpr SizeType() = default;
 
     template <SizeCompatible T>
-    SizeType(T typeToUse)
+    constexpr SizeType(T typeToUse)
         : size(static_cast<size_t>(typeToUse))
     {
     }
 
     template <typename T>
-    T get() const
+    constexpr T get() const
     {
         return static_cast<T>(size);
     }
 
     template <SizeCompatible T>
-    operator T() const
+    constexpr operator T() const
     {
         return get<T>();
     }

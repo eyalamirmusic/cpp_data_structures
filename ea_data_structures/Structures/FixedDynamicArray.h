@@ -47,7 +47,9 @@ public:
     T& get(int index) const noexcept { return internalData[(size_t) index]; }
     T& operator[](int index) const noexcept { return get(index); }
 
-    T* data() { return internalData; }
+    //Const here matches begin()/end()/get(): this class propagates constness
+    //shallowly, so a const array still hands out mutable elements
+    T* data() const { return internalData; }
     int size() const { return internalSize; }
 
 private:

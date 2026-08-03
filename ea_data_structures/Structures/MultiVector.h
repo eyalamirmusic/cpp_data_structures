@@ -6,7 +6,7 @@
 namespace EA
 {
 //A 2D container stored as one contiguous Vector<T>: dimensions × dimSize
-//elements laid out row-by-row. Indexing with operator[] yields a BufferView
+//elements laid out row-by-row. Indexing with operator[] yields a Span
 //onto the row. Cache-friendlier than nested vectors for audio/DSP data.
 template <typename T>
 struct FlatMultiVector
