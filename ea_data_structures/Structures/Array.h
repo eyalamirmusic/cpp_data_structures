@@ -11,6 +11,12 @@ namespace EA
 //A std::array wrapper with int-based sizes/indexes and helpers (contains,
 //fill, sort, getIndexOf, …). Size is fixed at compile time via the Size
 //template parameter; storage is in-place, no heap allocation.
+//
+//Everything here is constexpr apart from the two sort overloads: std::sort is
+//not constexpr until C++26, and this library is C++20. So an Array of a literal
+//type can be built, filled, indexed, searched and compared at compile time -
+//which is what lets a type that stores one (a matrix, a lookup table) keep its
+//own constexpr rather than lose it to its storage.
 template <typename T, int Size>
 class Array
 {
@@ -21,9 +27,9 @@ public:
     using Iterator = typename ContainerType::iterator;
     using Const_Iterator = typename ContainerType::const_iterator;
 
-    Array() = default;
+    constexpr Array() = default;
 
-    Array(std::initializer_list<T> list)
+    constexpr Array(std::initializer_list<T> list)
     {
         auto numToCopy = (int) list.size() < Size ? (int) list.size() : Size;
         auto out = container.begin();
@@ -32,73 +38,80 @@ public:
             *out++ = *it;
     }
 
-    Array(const Array& other) = default;
-    Array(Array&& other) noexcept = default;
+    constexpr Array(const Array& other) = default;
+    constexpr Array(Array&& other) noexcept = default;
 
-    explicit Array(const ContainerType& other) { container = other; }
+    constexpr explicit Array(const ContainerType& other) { container = other; }
 
-    explicit Array(ContainerType&& other) noexcept { container = std::move(other); }
+    constexpr explicit Array(ContainerType&& other) noexcept
+    {
+        container = std::move(other);
+    }
 
-    Array& operator=(const ContainerType& other)
+    constexpr Array& operator=(const ContainerType& other)
     {
         container = other;
         return *this;
     }
 
-    Array& operator=(const Array& other) = default;
+    constexpr Array& operator=(const Array& other) = default;
 
-    bool operator==(const Array& other) const
+    constexpr bool operator==(const Array& other) const
     {
         return container == other.container;
     }
 
-    bool operator!=(const Array& other) const
+    constexpr bool operator!=(const Array& other) const
     {
         return container != other.container;
     }
 
-    bool empty() const noexcept { return container.empty(); }
+    constexpr bool empty() const noexcept { return container.empty(); }
 
     static constexpr int size() noexcept { return Size; }
 
-    T& back() { return container.back(); }
-    T& front() { return container.front(); }
+    //Const overloads included because a constexpr Array is a const one
+    constexpr T& back() { return container.back(); }
+    constexpr const T& back() const { return container.back(); }
+    constexpr T& front() { return container.front(); }
+    constexpr const T& front() const { return container.front(); }
 
-    T& operator[](int index) noexcept { return container[(size_t) index]; }
-    const T& operator[](int index) const noexcept
+    constexpr T& operator[](int index) noexcept { return container[(size_t) index]; }
+    constexpr const T& operator[](int index) const noexcept
     {
         return container[(size_t) index];
     }
-    T& get(int index) { return container[(size_t) index]; }
-    const T& get(int index) const { return container[(size_t) index]; }
+    constexpr T& get(int index) { return container[(size_t) index]; }
+    constexpr const T& get(int index) const { return container[(size_t) index]; }
 
-    Iterator begin() noexcept { return container.begin(); }
-    Iterator end() noexcept { return container.end(); }
+    constexpr Iterator begin() noexcept { return container.begin(); }
+    constexpr Iterator end() noexcept { return container.end(); }
 
-    Const_Iterator begin() const noexcept { return container.begin(); }
-    Const_Iterator end() const noexcept { return container.end(); }
+    constexpr Const_Iterator begin() const noexcept { return container.begin(); }
+    constexpr Const_Iterator end() const noexcept { return container.end(); }
 
-    Const_Iterator cbegin() const { return container.cbegin(); }
-    Const_Iterator cend() const { return container.cend(); }
+    constexpr Const_Iterator cbegin() const { return container.cbegin(); }
+    constexpr Const_Iterator cend() const { return container.cend(); }
 
-    bool contains(const T& element) const
+    constexpr bool contains(const T& element) const
     {
         return Vectors::contains(container, element);
     }
 
-    ContainerType& getArray() { return container; }
-    const ContainerType& getArray() const { return container; }
-    void copyFrom(ContainerType& other) { container = other; }
-    void copyFrom(Array& other) { container = other.getArray(); }
+    constexpr ContainerType& getArray() { return container; }
+    constexpr const ContainerType& getArray() const { return container; }
+    //The source is taken by const reference, so a constant can be one
+    constexpr void copyFrom(const ContainerType& other) { container = other; }
+    constexpr void copyFrom(const Array& other) { container = other.getArray(); }
 
     template <typename A>
-    void mixFrom(A& other)
+    constexpr void mixFrom(const A& other)
     {
         for (int index = 0; index < size(); ++index)
             container[index] += other[index];
     }
 
-    void fill(const T& value)
+    constexpr void fill(const T& value)
     {
         for (auto& element: container)
             element = value;
@@ -110,36 +123,37 @@ public:
         Vectors::copyInto(other, container);
     }
 
-    int getLastElementIndex() const { return size() - 1; }
+    constexpr int getLastElementIndex() const { return size() - 1; }
 
+    //Not constexpr: std::sort only becomes one in C++26
     void sort() { std::sort(begin(), end()); }
 
     template <typename A>
-    int getIndexOf(const A& element) const
+    constexpr int getIndexOf(const A& element) const
     {
         return Vectors::getIndexOf(container, element);
     }
 
     template <typename Predicate>
-    int getIndexIf(Predicate&& predicate) const
+    constexpr int getIndexIf(Predicate&& predicate) const
     {
         return Vectors::getIndexIf(container, std::forward<Predicate>(predicate));
     }
 
     template <typename Predicate>
-    int countIf(Predicate&& predicate) const
+    constexpr int countIf(Predicate&& predicate) const
     {
         return Vectors::countIf(container, std::forward<Predicate>(predicate));
     }
 
     template <typename Predicate>
-    const T* findIf(Predicate&& predicate) const
+    constexpr const T* findIf(Predicate&& predicate) const
     {
         return Vectors::findIf(*this, std::forward<Predicate>(predicate));
     }
 
     template <typename Predicate>
-    T* findIf(Predicate&& predicate)
+    constexpr T* findIf(Predicate&& predicate)
     {
         return Vectors::findIf(*this, std::forward<Predicate>(predicate));
     }
@@ -153,8 +167,8 @@ public:
             Vectors::reverse(container);
     }
 
-    const T* data() const { return container.data(); }
-    T* data() { return container.data(); }
+    constexpr const T* data() const { return container.data(); }
+    constexpr T* data() { return container.data(); }
 
 protected:
     ContainerType container {};

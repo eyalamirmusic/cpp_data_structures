@@ -159,3 +159,134 @@ auto arrayPredicateHelpers = test("Array.predicate_helper_members") = []
     *values.findIf([](int value) { return value == 3; }) = 30;
     check(values[2] == 30);
 };
+
+//Everything below runs entirely at compile time. The static_asserts are the
+//test - a failure is a build error rather than a red case - and check() is
+//there only so the case registers and reports.
+auto arrayConstexprConstruction = test("Array.constexpr_construction") = []
+{
+    constexpr auto zeroed = EA::Array<int, 3> {};
+    static_assert(zeroed[0] == 0 && zeroed[1] == 0 && zeroed[2] == 0);
+    static_assert(zeroed.size() == 3);
+    static_assert(!zeroed.empty());
+
+    constexpr auto listed = EA::Array<int, 4> {1, 2, 3, 4};
+    static_assert(listed[0] == 1 && listed[3] == 4);
+    static_assert(listed.front() == 1);
+    static_assert(listed.back() == 4);
+    static_assert(listed.get(2) == 3);
+    static_assert(listed.getLastElementIndex() == 3);
+
+    //A shorter list leaves the rest value-initialized, at compile time too
+    constexpr auto partial = EA::Array<int, 4> {1, 2};
+    static_assert(partial[2] == 0 && partial[3] == 0);
+
+    constexpr auto deduced = EA::Array {1.5, 2.5};
+    static_assert(std::is_same_v<decltype(deduced), const EA::Array<double, 2>>);
+    static_assert(deduced[1] == 2.5);
+
+    check(true);
+};
+
+auto arrayConstexprComparison = test("Array.constexpr_comparison") = []
+{
+    constexpr auto a = EA::Array<int, 3> {1, 2, 3};
+    constexpr auto b = EA::Array<int, 3> {1, 2, 3};
+    constexpr auto c = EA::Array<int, 3> {1, 2, 4};
+
+    static_assert(a == b);
+    static_assert(a != c);
+
+    check(true);
+};
+
+//The mutating members are constexpr too, which is what makes an Array usable as
+//a local inside a constexpr function rather than only as a finished constant.
+auto arrayConstexprMutation = test("Array.constexpr_mutation") = []
+{
+    constexpr auto filled = []
+    {
+        auto values = EA::Array<int, 4> {};
+        values.fill(7);
+        values[1] = 9;
+
+        return values;
+    }();
+
+    static_assert(filled[0] == 7 && filled[1] == 9 && filled[3] == 7);
+
+    constexpr auto mixed = []
+    {
+        auto values = EA::Array<int, 3> {1, 2, 3};
+        auto other = EA::Array<int, 3> {10, 20, 30};
+        values.mixFrom(other);
+
+        return values;
+    }();
+
+    static_assert(mixed[0] == 11 && mixed[2] == 33);
+
+    constexpr auto copied = []
+    {
+        auto source = EA::Array<int, 3> {4, 5, 6};
+        auto target = EA::Array<int, 3> {};
+        target.copyFrom(source);
+
+        return target;
+    }();
+
+    static_assert(copied[1] == 5);
+
+    check(true);
+};
+
+auto arrayConstexprSearching = test("Array.constexpr_searching") = []
+{
+    constexpr auto values = EA::Array<int, 4> {1, 2, 3, 4};
+
+    static_assert(values.contains(3));
+    static_assert(!values.contains(99));
+    static_assert(values.getIndexOf(2) == 1);
+    static_assert(values.getIndexOf(99) == -1);
+    static_assert(values.getIndexIf([](int value) { return value > 2; }) == 2);
+    static_assert(values.countIf([](int value) { return value % 2 == 0; }) == 2);
+
+    static_assert(
+        []
+        {
+            auto local = EA::Array<int, 4> {1, 2, 3, 4};
+            auto* found = local.findIf([](int v) { return v == 3; });
+
+            return found != nullptr && *found == 3;
+        }());
+
+    static_assert(values.findIf([](int v) { return v == 99; }) == nullptr);
+
+    check(true);
+};
+
+auto arrayConstexprIteration = test("Array.constexpr_iteration") = []
+{
+    constexpr auto total = []
+    {
+        auto values = EA::Array<int, 4> {1, 2, 3, 4};
+        auto sum = 0;
+
+        for (auto value: values)
+            sum += value;
+
+        return sum;
+    }();
+
+    static_assert(total == 10);
+
+    static_assert(
+        []
+        {
+            auto values = EA::Array<int, 3> {5, 6, 7};
+
+            return *values.data() == 5 && *(values.cbegin() + 2) == 7;
+        }());
+
+    check(true);
+};

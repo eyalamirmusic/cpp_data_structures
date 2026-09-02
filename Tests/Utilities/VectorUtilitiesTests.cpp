@@ -1,5 +1,6 @@
 #include <NanoTest/NanoTest.h>
 #include <algorithm>
+#include <array>
 #include <memory>
 #include <ea_data_structures/Structures/StaticVector.h>
 #include <ea_data_structures/Structures/Vector.h>
@@ -520,4 +521,62 @@ auto vectorMemberPredicateHelpers = test("Vector.predicate_helper_members") = []
     check(v.findIf([](const Item& i) { return i.key == 2; })->payload == 20);
     check(v.lowerBoundIndex(2, keyOfItem) == 1);
     check(v.upperBoundIndex(2, keyOfItem) == 3);
+};
+
+//The search and reverse helpers are constexpr, which is what lets Array's own
+//members be. They work on any container usable at compile time, std::array
+//included, so the property is tested here rather than only through Array.
+auto vectorsSearchHelpersAreConstexpr =
+    test("Vectors.search_helpers_are_constexpr") = []
+{
+    constexpr auto values = std::array {1, 2, 3, 4};
+
+    static_assert(EA::Vectors::getIndexOf(values, 3) == 2);
+    static_assert(EA::Vectors::getIndexOf(values, 99) == -1);
+    static_assert(EA::Vectors::getIndexOfReverse(values, 4) == 3);
+    static_assert(EA::Vectors::contains(values, 1));
+    static_assert(!EA::Vectors::contains(values, 0));
+    static_assert(EA::Vectors::getIndexIf(values, [](int v) { return v > 2; }) == 2);
+    static_assert(EA::Vectors::countIf(values, [](int v) { return v > 2; }) == 2);
+    static_assert(
+        EA::Vectors::getIndexOfComparison(values, [](int v) { return v == 2; })
+        == 1);
+
+    static_assert(
+        []
+        {
+            auto local = std::array {1, 2, 3};
+
+            return *EA::Vectors::find(local, 2) == 2
+                   && EA::Vectors::find(local, 9) == nullptr
+                   && *EA::Vectors::findIf(local, [](int v) { return v == 3; }) == 3
+                   && EA::Vectors::getElementRef(local, 1) == 1;
+        }());
+
+    check(true);
+};
+
+auto vectorsReverseIsConstexpr = test("Vectors.reverse_is_constexpr") = []
+{
+    constexpr auto reversed = []
+    {
+        auto values = std::array {1, 2, 3, 4};
+        EA::Vectors::reverse(values);
+
+        return values;
+    }();
+
+    static_assert(reversed == std::array {4, 3, 2, 1});
+
+    constexpr auto rotated = []
+    {
+        auto values = std::array {1, 2, 3, 4, 5};
+        EA::Vectors::rotate(values.begin(), values.begin() + 2, values.end());
+
+        return values;
+    }();
+
+    static_assert(rotated == std::array {3, 4, 5, 1, 2});
+
+    check(true);
 };

@@ -98,7 +98,7 @@ namespace EA::Vectors
 // Gets the index of an element that can be compared to each element of the
 // container If it's not found, it will return -1;
 template <typename T, typename Func>
-int getIndexOfComparison(const T& container, Func&& comparisonFunc)
+constexpr int getIndexOfComparison(const T& container, Func&& comparisonFunc)
 {
     int index = 0;
 
@@ -116,14 +116,14 @@ int getIndexOfComparison(const T& container, Func&& comparisonFunc)
 // Gets the index of an element that can be compared to each element of the
 // container If it's not found, it will return -1;
 template <typename T, typename A>
-int getIndexOf(const T& container, const A& element)
+constexpr int getIndexOf(const T& container, const A& element)
 {
     return getIndexOfComparison(container,
                                 [&](const auto& e) { return e == element; });
 }
 
 template <typename T, typename A>
-int getIndexOfReverse(const T& container, const A& element)
+constexpr int getIndexOfReverse(const T& container, const A& element)
 {
     return getIndexOfComparison(container,
                                 [&](const auto& e) { return element == e; });
@@ -133,7 +133,7 @@ int getIndexOfReverse(const T& container, const A& element)
  *  Returns -1 if no elements in the container match
  */
 template <typename ContainerType, typename F>
-int getIndexIf(const ContainerType& container, F&& predicate)
+constexpr int getIndexIf(const ContainerType& container, F&& predicate)
 {
     int index = 0;
 
@@ -149,7 +149,7 @@ int getIndexIf(const ContainerType& container, F&& predicate)
 
 /** Counts the elements which satisfy the given predicate */
 template <typename ContainerType, typename F>
-int countIf(const ContainerType& container, F&& predicate)
+constexpr int countIf(const ContainerType& container, F&& predicate)
 {
     int total = 0;
 
@@ -163,7 +163,7 @@ int countIf(const ContainerType& container, F&& predicate)
 }
 
 template <typename It>
-void reverseRange(It first, It last)
+constexpr void reverseRange(It first, It last)
 {
     while (first != last && first != --last)
     {
@@ -174,7 +174,7 @@ void reverseRange(It first, It last)
 
 // Rotates so that middle becomes the first element, like std::rotate
 template <typename It>
-void rotate(It first, It middle, It last)
+constexpr void rotate(It first, It middle, It last)
 {
     reverseRange(first, middle);
     reverseRange(middle, last);
@@ -182,7 +182,7 @@ void rotate(It first, It middle, It last)
 }
 
 template <typename T>
-void reverse(T& container)
+constexpr void reverse(T& container)
 {
     reverseRange(std::begin(container), std::end(container));
 }
@@ -339,7 +339,7 @@ int insertSorted(Container& container, const T& element)
 
 // Check if an element that be compared to elements of this container exist.
 template <typename T, typename A>
-bool contains(const T& container, const A& elementToCheck)
+constexpr bool contains(const T& container, const A& elementToCheck)
 {
     return getIndexOf(container, elementToCheck) >= 0;
 }
@@ -347,7 +347,7 @@ bool contains(const T& container, const A& elementToCheck)
 // Gets a pointer to the first element comparing equal to the given value.
 // If no element matches, this returns a nullptr
 template <typename Container, typename A>
-auto find(Container& container, const A& element)
+constexpr auto find(Container& container, const A& element)
 {
     using Pointer = decltype(&container[0]);
 
@@ -365,7 +365,7 @@ auto find(Container& container, const A& element)
 // This is the predicate counterpart of find() - use it when the element is
 // identified by one of its fields rather than by comparing the whole element
 template <typename Container, typename Predicate>
-auto findIf(Container& container, Predicate&& predicate)
+constexpr auto findIf(Container& container, Predicate&& predicate)
 {
     using Pointer = decltype(&container[0]);
 
@@ -380,7 +380,7 @@ auto findIf(Container& container, Predicate&& predicate)
 // Gets a pointer to an element that can be compared to an element of this
 // container, If the element doesn't exist, this returns a nullptr
 template <typename Container, typename A>
-auto getElementPointer(Container& container, const A& element)
+constexpr auto getElementPointer(Container& container, const A& element)
 {
     return find(container, element);
 }
@@ -391,7 +391,7 @@ auto getElementPointer(Container& container, const A& element)
 // If 'not finding' the element is a valid result, use find()
 // instead and check for nullptr
 template <typename Container, typename A>
-auto& getElementRef(Container& container, const A& element)
+constexpr auto& getElementRef(Container& container, const A& element)
 {
     return *find(container, element);
 }
