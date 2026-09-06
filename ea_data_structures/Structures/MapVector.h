@@ -104,6 +104,13 @@ struct MapVector
 
     ValueType& operator[](const KeyType& key) { return getOrCreate(key); }
 
+    // Order matters: two maps built in a different insertion order compare
+    // unequal, which is what a vector-backed map means by equality
+    bool operator==(const MapVector& other) const
+    {
+        return container == other.container;
+    }
+
     void clear() { container.clear(); }
     void reserve(int numItems) { container.reserve(numItems); }
 

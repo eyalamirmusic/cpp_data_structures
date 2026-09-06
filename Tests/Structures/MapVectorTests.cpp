@@ -129,3 +129,24 @@ auto mapVectorReserve = test("MapVector.reserve_preserves_size") = []
     map[1] = 1;
     check(map.size() == 1);
 };
+
+auto mapVectorEquality = nano::test("MapVector.equality") = []
+{
+    auto a = EA::MapVector<std::string, int> {};
+    a["one"] = 1;
+    a["two"] = 2;
+
+    auto b = a;
+    nano::check(a == b);
+
+    b["two"] = 3;
+    nano::check(!(a == b));
+
+    // A vector-backed map is ordered, so insertion order is part of equality
+    auto reversed = EA::MapVector<std::string, int> {};
+    reversed["two"] = 2;
+    reversed["one"] = 1;
+    nano::check(!(a == reversed));
+
+    nano::check(EA::MapVector<std::string, int> {} == EA::MapVector<std::string, int> {});
+};

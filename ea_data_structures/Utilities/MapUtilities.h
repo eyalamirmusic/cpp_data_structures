@@ -50,6 +50,11 @@ struct KeyValuePair
 
     bool operator<(const KeyValuePair& other) const { return second < other.second; }
 
+    bool operator==(const KeyValuePair& other) const
+    {
+        return first == other.first && second == other.second;
+    }
+
     bool keyEqualsTo(const KeyType& other) const
     {
         return Detail::compare(first, other);
