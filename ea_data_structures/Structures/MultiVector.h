@@ -24,6 +24,7 @@ struct FlatMultiVector
     }
 
     int size() const noexcept { return numDimensions; }
+    std::size_t getSize() const noexcept { return (std::size_t) numDimensions; }
 
     int getDimensionStart(int dimension) const noexcept
     {

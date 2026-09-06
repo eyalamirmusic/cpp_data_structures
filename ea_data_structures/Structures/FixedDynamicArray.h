@@ -51,6 +51,7 @@ public:
     //shallowly, so a const array still hands out mutable elements
     T* data() const { return internalData; }
     int size() const { return internalSize; }
+    std::size_t getSize() const { return (std::size_t) internalSize; }
 
 private:
     int internalSize = 0;

@@ -246,3 +246,12 @@ auto vectorRemoveRangeThroughEnd = test("Vector.removeRange_through_end") = []
     check(middle[1] == 4);
     check(middle[2] == 5);
 };
+
+auto vectorGetSize = test("Vector.getSize_is_the_size_t_count") = []
+{
+    auto values = EA::Vector<int> {1, 2, 3};
+
+    check(values.getSize() == std::size_t {3});
+    check(values.size() == 3);
+    check(EA::Vector<int> {}.getSize() == std::size_t {0});
+};

@@ -5,6 +5,7 @@
 #include "../Utilities/VectorUtilities.h"
 #include <array>
 #include <concepts>
+#include <cstddef>
 
 namespace EA
 {
@@ -69,6 +70,7 @@ public:
     constexpr bool empty() const noexcept { return container.empty(); }
 
     static constexpr int size() noexcept { return Size; }
+    static constexpr std::size_t getSize() noexcept { return (std::size_t) Size; }
 
     //Const overloads included because a constexpr Array is a const one
     constexpr T& back() { return container.back(); }

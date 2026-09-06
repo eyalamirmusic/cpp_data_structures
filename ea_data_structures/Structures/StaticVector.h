@@ -50,6 +50,7 @@ struct StaticVector : VectorBase
 
     bool empty() const noexcept { return currentSize == 0; }
     int size() const noexcept { return currentSize; }
+    std::size_t getSize() const noexcept { return (std::size_t) currentSize; }
 
     void insert(int position, const T& object)
     {

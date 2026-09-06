@@ -290,3 +290,12 @@ auto arrayConstexprIteration = test("Array.constexpr_iteration") = []
 
     check(true);
 };
+
+auto arrayGetSize = test("Array.getSize_is_the_size_t_count") = []
+{
+    constexpr auto values = EA::Array {1, 2, 3};
+
+    static_assert(values.getSize() == std::size_t {3});
+    static_assert(EA::Array<int, 3>::getSize() == std::size_t {3});
+    check(values.size() == 3);
+};

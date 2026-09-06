@@ -33,6 +33,7 @@ public:
     }
 
     int size() const noexcept { return internal.size(); }
+    std::size_t getSize() const noexcept { return internal.getSize(); }
 
     void fill(T value = T(0)) { internal.fill(value); }
 

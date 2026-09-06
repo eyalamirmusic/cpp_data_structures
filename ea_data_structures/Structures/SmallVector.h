@@ -32,6 +32,14 @@ struct SmallVector : VectorBase
         return dynamicVec.size();
     }
 
+    std::size_t getSize() const noexcept
+    {
+        if (isStatic())
+            return staticVec.getSize();
+
+        return dynamicVec.getSize();
+    }
+
     void insert(int position, const T& object)
     {
         checkSwitch(1);

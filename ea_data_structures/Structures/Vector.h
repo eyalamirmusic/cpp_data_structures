@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cassert>
+#include <cstddef>
+#include <limits>
 #include <vector>
 #include "SizeType.h"
 #include "../Utilities/VectorUtilities.h"
@@ -103,7 +106,16 @@ public:
 
     bool empty() const noexcept { return container.empty(); }
 
-    int size() const noexcept { return (int) container.size(); }
+    //An int, like every size in this library, and asserted to fit one:
+    //getSize() is the full size_t count, for STL calls and for a vector that
+    //has outgrown an int
+    int size() const noexcept
+    {
+        assert(container.size() <= (std::size_t) std::numeric_limits<int>::max());
+        return (int) container.size();
+    }
+
+    std::size_t getSize() const noexcept { return container.size(); }
 
     void insert(int position, const T& object)
     {

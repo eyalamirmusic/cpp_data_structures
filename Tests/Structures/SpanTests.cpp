@@ -6,6 +6,8 @@
 #include <ea_data_structures/Structures/SmallVector.h>
 #include <ea_data_structures/Structures/FixedDynamicArray.h>
 #include <array>
+#include <cstddef>
+#include <span>
 #include <vector>
 
 using namespace nano;
@@ -51,6 +53,18 @@ constexpr bool canReverse = requires(SpanType span) { span.reverse(); };
 
 template <typename SpanType>
 constexpr bool canQuery = requires(SpanType span) { span.contains(0); };
+
+//Reports a short int size and the full count from getSize, the way an EA
+//container holding more than an int describes would
+struct WideContainer
+{
+    int* data() { return values; }
+    const int* data() const { return values; }
+    int size() const { return 1; }
+    std::size_t getSize() const { return 3; }
+
+    int values[3] = {7, 8, 9};
+};
 } // namespace
 
 auto spanDefault = test("Span.default_is_empty") = []
@@ -506,4 +520,76 @@ auto spanBetween = test("Span.between_is_a_half_open_index_range") = []
     check(middle.front() == 1);
     check(middle.back() == 3);
     check(span.between(2, 2).empty());
+};
+
+auto spanGetSize = test("Span.getSize_is_the_full_size_t_count") = []
+{
+    auto values = EA::Vector<int> {1, 2, 3};
+    auto span = EA::Span<int> {values};
+
+    check(span.getSize() == std::size_t {3});
+    check(span.size() == 3);
+    check(span.getSizeInBytes() == sizeof(int) * 3);
+    check(span.sizeInBytes() == (int) sizeof(int) * 3);
+};
+
+auto spanPrefersGetSize =
+    test("Span.builds_from_a_container_getSize_when_it_has_one") = []
+{
+    auto wide = WideContainer {};
+    auto span = EA::Span<int> {wide};
+
+    check(span.getSize() == std::size_t {3});
+    check(span.back() == 9);
+};
+
+auto spanBeyondInt = test("Span.getSize_describes_a_count_beyond_int") = []
+{
+    auto byte = char {};
+    auto huge = std::size_t {1} << 33;
+    auto span = EA::Span<const char> {&byte, huge};
+
+    check(span.getSize() == huge);
+    check(span.getSizeInBytes() == huge);
+};
+
+auto spanFromStdSpan = test("Span.construct_from_std_span") = []
+{
+    auto values = EA::Vector<int> {1, 2, 3};
+    auto stdSpan = std::span<int> {values.data(), 3};
+
+    auto span = EA::Span<int> {stdSpan};
+    auto constSpan = EA::Span<const int> {std::span<int> {values.data(), 2}};
+    auto deduced = EA::Span {std::span<const int> {values.data(), 1}};
+
+    check(span.size() == 3);
+    check(span.data() == values.data());
+    check(constSpan.size() == 2);
+    check(deduced.size() == 1);
+    static_assert(std::is_same_v<decltype(deduced), EA::Span<const int>>);
+};
+
+auto spanGetSpan = test("Span.getSpan_is_the_std_span") = []
+{
+    auto values = EA::Vector<int> {1, 2, 3};
+    auto span = EA::Span<int> {values};
+
+    auto stdSpan = span.getSpan();
+    std::span<const int> viaRange = span;
+
+    check(stdSpan.size() == std::size_t {3});
+    check(stdSpan.data() == values.data());
+    check(viaRange.size() == std::size_t {3});
+    check(viaRange.data() == values.data());
+};
+
+auto spanSubspanToEnd = test("Span.subspan_with_toEnd_runs_to_the_end") = []
+{
+    auto values = EA::Vector<int> {0, 1, 2, 3, 4};
+    auto span = EA::Span<const int> {values};
+
+    check(span.subspan(2).size() == 3);
+    check(span.subspan(2, EA::Span<const int>::toEnd).front() == 2);
+    check(span.subspan(5).empty());
+    check(span.subspan(1, 2).back() == 2);
 };

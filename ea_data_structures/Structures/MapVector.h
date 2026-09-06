@@ -141,6 +141,7 @@ struct MapVector
     ElementType& getPair(int index) { return container[index]; }
 
     int size() const { return container.size(); }
+    std::size_t getSize() const { return container.getSize(); }
 
     void sortByKey(bool forward = true)
     {

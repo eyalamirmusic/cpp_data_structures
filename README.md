@@ -9,7 +9,7 @@ Some examples of what's in here:
 ``Vector<T>``
 ``Array<T, Size>``
 
-Wrappers around the STL ones with int semantics instead of size_t, and many helper functions like 
+Wrappers around the STL ones with int semantics instead of size_t (`getSize()` is the full size_t, for STL calls and for a `Span` over more than an int describes), and many helper functions like 
 ```cpp
 EA::Vector<int> vec;
 
