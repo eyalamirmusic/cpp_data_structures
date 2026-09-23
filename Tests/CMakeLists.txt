@@ -32,6 +32,7 @@ nano_add_executable(ea_data_structures_tests
         Structures/FifoTests.cpp
         Structures/FilteredTests.cpp
         Structures/FixedDynamicArrayTests.cpp
+        Structures/ImmutableTests.cpp
         Structures/MapVectorTests.cpp
         Structures/MultiVectorTests.cpp
         Structures/OwnedVectorTests.cpp
@@ -56,6 +57,9 @@ nano_add_executable(ea_data_structures_tests
 target_link_libraries(ea_data_structures_tests PRIVATE ea_data_structures)
 
 target_include_directories(ea_data_structures_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+#Makes EA::Immutable precondition violations throw so the tests can check them
+target_compile_definitions(ea_data_structures_tests PRIVATE EA_IMMUTABLE_ASSERT_THROWS)
 
 target_compile_options(ea_data_structures_tests PRIVATE
     $<$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>:/W4 /WX>

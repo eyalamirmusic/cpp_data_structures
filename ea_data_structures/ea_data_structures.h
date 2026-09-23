@@ -42,6 +42,7 @@ BEGIN_JUCE_MODULE_DECLARATION
 #include "Structures/SmallVector.h"
 #include "Structures/MultiVector.h"
 #include "Structures/CopyOnWrite.h"
+#include "Structures/Immutable.h"
 
 #include "Flags/SpinHint.h"
 #include "Flags/Locks.h"
