@@ -249,8 +249,173 @@ auto planarConstexpr = test("PlanarView.works_at_compile_time") = []
     check(view.getNumChannels() == 2);
 };
 
-auto planarIsSmall = test("PlanarView.is_a_pointer_and_two_ints") = []
+auto planarIsSmall = test("PlanarView.is_a_pointer_and_three_ints") = []
 {
-    static_assert(sizeof(EA::PlanarView<float>) <= sizeof(void*) + sizeof(int) * 2);
+    //Three ints after a pointer round up to the pointer's alignment
+    struct PointerAndThreeInts
+    {
+        void* pointer;
+        int ints[3];
+    };
+
+    static_assert(sizeof(EA::PlanarView<float>) <= sizeof(PointerAndThreeInts));
     static_assert(std::is_trivially_copyable_v<EA::PlanarView<float>>);
+};
+
+auto planarStrided = test("PlanarView.strided_view_skips_the_gaps") = []
+{
+    //Two channels of five samples, viewed as two channels of three
+    float data[] = {0, 1, 2, 3, 4, 10, 11, 12, 13, 14};
+    auto view = EA::PlanarView<float>(data, 2, 3, 5);
+
+    check(view.getNumChannels() == 2);
+    check(view.getNumSamples() == 3);
+    check(view.getChannelStride() == 5);
+    check(view.getNumElements() == 6);
+    check(view.data() == data);
+    check(!view.isContiguous());
+
+    check(view.getChannelPointer(0) == data);
+    check(view.getChannelPointer(1) == data + 5);
+    check(view[0].size() == 3);
+    check(view[1].size() == 3);
+    check(view[1][0] == 10.f);
+    check(view[1][2] == 12.f);
+};
+
+auto planarStridedDeduction =
+    test("PlanarView.deduces_element_type_with_a_stride") = []
+{
+    float data[] = {1, 2, 3, 4, 5, 6};
+
+    auto view = EA::PlanarView(data, 2, 2, 3);
+    static_assert(std::is_same_v<decltype(view), EA::PlanarView<float>>);
+
+    check(view.getChannelStride() == 3);
+};
+
+auto planarSubView = test("PlanarView.sub_view_offsets_every_channel") = []
+{
+    float data[] = {0, 1, 2, 3, 10, 11, 12, 13};
+    auto view = EA::PlanarView<float>(data, 2, 4);
+
+    auto sub = view.subView(1, 2);
+
+    check(sub.getNumChannels() == 2);
+    check(sub.getNumSamples() == 2);
+    check(sub.getChannelStride() == 4);
+    check(!sub.isContiguous());
+    check(sub.getChannelPointer(0) == data + 1);
+    check(sub.getChannelPointer(1) == data + 5);
+    check(sub[0][0] == 1.f);
+    check(sub[0][1] == 2.f);
+    check(sub[1][0] == 11.f);
+    check(sub[1][1] == 12.f);
+};
+
+auto planarStridedIteration =
+    test("PlanarView.iterating_a_strided_view_honours_the_stride") = []
+{
+    float data[] = {0, 1, 2, 3, 10, 11, 12, 13, 20, 21, 22, 23};
+    auto view = EA::PlanarView<float>(data, 3, 4).subView(2);
+
+    auto numChannelsSeen = 0;
+
+    for (auto channel: view)
+    {
+        check(channel.size() == 2);
+        check(channel.data() == data + numChannelsSeen * 4 + 2);
+        check(channel[0] == (float) (numChannelsSeen * 10 + 2));
+        ++numChannelsSeen;
+    }
+
+    check(numChannelsSeen == 3);
+};
+
+auto planarSubViewFill = test("PlanarView.fill_on_a_sub_view_leaves_gaps_alone") = []
+{
+    float data[] = {0, 1, 2, 3, 10, 11, 12, 13};
+
+    EA::PlanarView<float>(data, 2, 4).subView(1, 2).fill(-1.f);
+
+    float expected[] = {0, -1, -1, 3, 10, -1, -1, 13};
+
+    for (auto index = 0; index < 8; ++index)
+        check(data[index] == expected[index]);
+};
+
+auto planarConstConversionStride =
+    test("PlanarView.const_conversion_keeps_the_stride") = []
+{
+    float data[] = {0, 1, 2, 3, 4, 10, 11, 12, 13, 14};
+    auto view = EA::PlanarView<float>(data, 2, 3, 5);
+
+    EA::PlanarView<const float> constView = view;
+
+    check(constView.getChannelStride() == 5);
+    check(constView.getChannelPointer(1) == data + 5);
+    check(constView[1][0] == 10.f);
+};
+
+auto planarContiguity = test("PlanarView.is_contiguous_without_gaps") = []
+{
+    float data[] = {0, 1, 2, 3, 10, 11, 12, 13};
+    auto view = EA::PlanarView<float>(data, 2, 4);
+
+    check(EA::PlanarView<float>().isContiguous());
+    check(view.isContiguous());
+    check(EA::PlanarView<float>(EA::Span<float>(data), 2).isContiguous());
+    check(EA::PlanarView<float>(data, 1, 2, 4).isContiguous());
+    check(EA::PlanarView<float>(data, 1, 4).subView(1, 2).isContiguous());
+    check(view.subView(0, 4).isContiguous());
+    check(view.subView(0).isContiguous());
+    check(!view.subView(0, 3).isContiguous());
+};
+
+auto planarSubViewClamps = test("PlanarView.sub_view_clamps_to_the_channel") = []
+{
+    float data[] = {0, 1, 2, 3, 10, 11, 12, 13};
+    auto view = EA::PlanarView<float>(data, 2, 4);
+
+    auto tail = view.subView(3, 10);
+    check(tail.getNumSamples() == 1);
+    check(tail[1][0] == 13.f);
+
+    auto rest = view.subView(1);
+    check(rest.getNumSamples() == 3);
+    check(rest[1][2] == 13.f);
+
+    auto pastTheEnd = view.subView(9, 2);
+    check(pastTheEnd.getNumSamples() == 0);
+    check(pastTheEnd.empty());
+
+    auto atTheEnd = view.subView(4, 0);
+    check(atTheEnd.empty());
+    check(atTheEnd.getNumElements() == 0);
+    check(atTheEnd.getChannel(0).empty());
+};
+
+auto planarEmptySubViewFlat =
+    test("PlanarView.flat_on_an_empty_strided_sub_view") = []
+{
+    float data[] = {0, 1, 2, 3, 10, 11, 12, 13};
+    auto empty = EA::PlanarView<float>(data, 2, 4).subView(2, 0);
+
+    check(empty.getChannelStride() == 4);
+    check(empty.isContiguous());
+    check(empty.flat().empty());
+};
+
+auto planarConstexprSubView = test("PlanarView.sub_view_works_at_compile_time") = []
+{
+    static constexpr float data[] = {0, 1, 2, 3, 10, 11, 12, 13};
+    constexpr auto view = EA::PlanarView<const float>(data, 2, 4);
+    constexpr auto sub = view.subView(1, 2);
+
+    static_assert(sub.getNumSamples() == 2);
+    static_assert(sub.getChannelStride() == 4);
+    static_assert(!sub.isContiguous());
+    static_assert(sub[1][0] == 11.f);
+
+    check(sub[0][1] == 2.f);
 };
