@@ -51,6 +51,7 @@ nano_add_executable(ea_data_structures_tests
         ValueWrapper/ConstructedTests.cpp
         ValueWrapper/RawStorageTests.cpp
         ValueWrapper/ValueTests.cpp
+        ValueWrapper/VariantTests.cpp
 )
 
 target_link_libraries(ea_data_structures_tests PRIVATE ea_data_structures)

@@ -49,6 +49,7 @@ BEGIN_JUCE_MODULE_DECLARATION
 
 #include "ValueWrapper/Value.h"
 #include "ValueWrapper/Constructed.h"
+#include "ValueWrapper/Variant.h"
 
 #include "Allocators/PMR.h"
 #include "Allocators/MultiPoolAllocator.h"
