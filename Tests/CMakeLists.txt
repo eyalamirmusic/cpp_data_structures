@@ -11,8 +11,20 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(NanoTest)
 
+#Test-only: interposes malloc/free and global new/delete so tests can assert
+#that a code path doesn't touch the global heap. This file is only reached when
+#this repo is the top-level project, so consumers never fetch or link it.
+FetchContent_Declare(
+    ScopedMemoryAllocations
+    GIT_REPOSITORY https://github.com/eyalamirmusic/ScopedMemoryAllocations.git
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(ScopedMemoryAllocations)
+
 nano_add_executable(ea_data_structures_tests
     SOURCES
+        Allocators/MultiPoolAllocatorTests.cpp
+        Allocators/PMRTests.cpp
         Flags/BoolTests.cpp
         Flags/CopyableAtomicTests.cpp
         Flags/LocksTests.cpp
@@ -54,7 +66,8 @@ nano_add_executable(ea_data_structures_tests
         ValueWrapper/VariantTests.cpp
 )
 
-target_link_libraries(ea_data_structures_tests PRIVATE ea_data_structures)
+target_link_libraries(ea_data_structures_tests
+    PRIVATE ea_data_structures AllocationsChecker)
 
 target_include_directories(ea_data_structures_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
