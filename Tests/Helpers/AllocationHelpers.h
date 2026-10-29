@@ -43,13 +43,26 @@ constexpr int expectedHeapCalls(int calls)
     return heapTrackingEnabled ? calls : 0;
 }
 
+//MSVC's debug STL (_ITERATOR_DEBUG_LEVEL > 0) gives every container a
+//"container proxy" allocated through the container's own allocator - so
+//through its pmr resource. Exact resource allocation counts add this once per
+//container constructed on the resource.
+#if defined(_ITERATOR_DEBUG_LEVEL) && _ITERATOR_DEBUG_LEVEL > 0
+constexpr int proxyAllocationsPerContainer = 1;
+#else
+constexpr int proxyAllocationsPerContainer = 0;
+#endif
+
 //A memory_resource that forwards to an upstream resource and counts the
 //calls, so tests can tell which resource an allocation actually went through.
+//The upstream is explicit on purpose: std::pmr::new_delete_resource() goes
+//through aligned operator new on libstdc++, and ScopedMemoryAllocations'
+//replacement of it passes alignments below sizeof(void*) straight to
+//posix_memalign, which rejects them with std::bad_alloc.
 class CountingResource final : public std::pmr::memory_resource
 {
 public:
-    explicit CountingResource(
-        std::pmr::memory_resource* upstreamToUse = std::pmr::new_delete_resource())
+    explicit CountingResource(std::pmr::memory_resource* upstreamToUse)
         : upstream(upstreamToUse)
     {
     }

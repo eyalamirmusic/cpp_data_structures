@@ -21,6 +21,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(ScopedMemoryAllocations)
 
+#AllocationsChecker compiles its sources straight into the test executable, so
+#keep our warnings-as-errors off third-party code (GCC rejects its operator
+#delete replacements under -Wextra's -Wsized-deallocation).
+set_source_files_properties(
+    ${ScopedMemoryAllocations_SOURCE_DIR}/Source/ScopedMemoryAllocations/Allocations.cpp
+    ${ScopedMemoryAllocations_SOURCE_DIR}/Source/ScopedMemoryAllocations/Malloc.cpp
+    ${ScopedMemoryAllocations_SOURCE_DIR}/Source/ScopedMemoryAllocations/Operators.cpp
+    PROPERTIES COMPILE_OPTIONS $<$<CXX_COMPILER_FRONTEND_VARIANT:GNU>:-w>
+)
+
 nano_add_executable(ea_data_structures_tests
     SOURCES
         Allocators/MultiPoolAllocatorTests.cpp

@@ -14,7 +14,7 @@
 
 using namespace nano;
 using EA::TestHelpers::countGlobalHeapCalls;
-using EA::TestHelpers::CountingResource;
+using EA::TestHelpers::proxyAllocationsPerContainer;
 using EA::TestHelpers::StackResource;
 
 namespace
@@ -41,7 +41,8 @@ constexpr auto longText = "a string that is far too long for any SSO buffer";
 auto objectStoresResource =
     test("PMR.Object.constructed_from_reference_or_pointer") = []
 {
-    auto resource = CountingResource();
+    auto stack = StackResource<1024>();
+    auto& resource = stack.counter;
 
     auto fromReference = EA::PMR::Object<std::pmr::vector<int>>(resource);
     auto fromPointer = EA::PMR::Object<std::pmr::vector<int>>(&resource);
@@ -55,8 +56,8 @@ auto objectStoresResource =
 auto objectAccessors =
     test("PMR.Object.get_arrow_and_star_reach_the_same_object") = []
 {
-    auto resource = CountingResource();
-    auto object = EA::PMR::Object<std::pmr::vector<int>>(resource);
+    auto stack = StackResource<1024>();
+    auto object = EA::PMR::Object<std::pmr::vector<int>>(stack.counter);
 
     object->push_back(1);
     (*object).push_back(2);
@@ -81,7 +82,7 @@ auto objectForwardsArgs = test("PMR.Object.forwards_args_after_the_resource") = 
     check(object->values[0] == 7);
     check(object->values[7] == 7);
     check(object->values.get_allocator().resource() == &stack.counter);
-    check(stack.counter.allocations == 1);
+    check(stack.counter.allocations == 1 + proxyAllocationsPerContainer);
 };
 
 auto objectNoGlobalHeap =
@@ -130,7 +131,8 @@ auto objectCopyKeepsResource = test("PMR.Object.copy_uses_the_source_resource") 
     check(sameContents);
     check(copyResource == &stack.counter);
     check(copyAllocatorResource == &stack.counter);
-    check(stack.counter.allocations == allocationsBefore + 1);
+    check(stack.counter.allocations
+          == allocationsBefore + 1 + proxyAllocationsPerContainer);
 };
 
 auto objectMoveKeepsResource =
@@ -157,8 +159,11 @@ auto objectMoveKeepsResource =
             movedAllocatorResource = moved->get_allocator().resource();
         });
 
+    //The move takes over the buffer; only MSVC's debug STL allocates anything,
+    //a fresh container proxy for the moved-to vector.
     check(heapCalls == 0);
-    check(stack.counter.allocations == allocationsBefore);
+    check(stack.counter.allocations
+          == allocationsBefore + proxyAllocationsPerContainer);
     check(stoleBuffer);
     check(sameContents);
     check(movedResource == &stack.counter);
@@ -217,8 +222,9 @@ auto objectAssignAcrossResources =
     check(moveTarget.getResource() == &first.counter);
     check(moveTarget->get_allocator().resource() == &first.counter);
 
-    //Both targets allocated from their own resource, never from the source's.
-    check(first.counter.allocations == 2);
+    //Both targets allocated from their own resource, never from the source's
+    //(plus a debug-STL proxy each when they were constructed).
+    check(first.counter.allocations == 2 + 2 * proxyAllocationsPerContainer);
     check(second.counter.allocations == secondAllocationsBefore);
 };
 
@@ -277,8 +283,8 @@ auto vectorPropagatesToElements =
     check(heapCalls == 0);
     check(textIntact);
     check(elementResource == &stack.counter);
-    //One buffer for the vector, one per string.
-    check(stack.counter.allocations == 3);
+    //One buffer for the vector, one per string (and a debug-STL proxy each).
+    check(stack.counter.allocations == 3 + 3 * proxyAllocationsPerContainer);
     check(stack.counter.live() == 0);
 };
 
@@ -406,6 +412,13 @@ struct Mixin
     long long padding[3] {};
 };
 
+//The over-alignment (and the padding it brings) is the point of this type, so
+//silence MSVC's C4324 "structure was padded due to alignment specifier".
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4324)
+#endif
+
 struct alignas(32) Derived
     : Mixin
     , Base
@@ -420,6 +433,10 @@ struct alignas(32) Derived
 
     int value;
 };
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 struct PlainBase
 {
@@ -479,7 +496,8 @@ auto makeOwnedUsesAllocator =
 
     check(heapCalls == 0);
     check(innerResource == &stack.counter);
-    check(stack.counter.allocations == 2);
+    //The Owned allocation, the vector's buffer, and any debug-STL proxy.
+    check(stack.counter.allocations == 2 + proxyAllocationsPerContainer);
     check(stack.counter.live() == 0);
 };
 
@@ -488,7 +506,8 @@ auto makeOwnedThrowingConstructor =
 {
     //Throwing allocates the exception object on the heap, so only the
     //resource's books are checked here.
-    auto resource = CountingResource();
+    auto stack = StackResource<1024>();
+    auto& resource = stack.counter;
     auto threw = false;
 
     try
@@ -626,4 +645,5 @@ auto makeOwnedMoveOnly = test("PMR.makeOwned.is_move_only_and_moves_freely") = [
     check(resourceKept);
     check(stack.counter.allocations == 1);
     check(stack.counter.deallocations == 0);
+    //unique_ptr isn't a container, so no debug-STL proxy is involved here.
 };

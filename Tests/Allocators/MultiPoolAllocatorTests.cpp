@@ -630,7 +630,7 @@ auto resourceDefaults =
     test("MemoryPoolResource.defaults_prefill_sixteen_64k_blocks") = []
 {
     auto resource = MemoryPoolResource();
-    constexpr auto blockSize = std::size_t {64 * 1024};
+    auto blockSize = std::size_t {64 * 1024};
 
     auto prefilledCalls = countGlobalHeapCalls(
         [&]
