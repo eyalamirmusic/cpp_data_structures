@@ -302,7 +302,7 @@ struct SmallVector : VectorBase
     int getLastElementIndex() const noexcept { return size() - 1; }
     int getLastValidElementIndex() const noexcept
     {
-        return std::max(0, getLastElementIndex());
+        return (std::max)(0, getLastElementIndex());
     }
 
     SmallVector& sort(bool forward = true)
