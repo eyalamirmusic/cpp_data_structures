@@ -72,7 +72,7 @@ constexpr std::size_t fullSizeOf(const Container& container)
 
 constexpr bool fitsInt(std::size_t size)
 {
-    return size <= (std::size_t) std::numeric_limits<int>::max();
+    return size <= (std::size_t) (std::numeric_limits<int>::max)();
 }
 } // namespace Detail
 

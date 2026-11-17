@@ -34,9 +34,9 @@ public:
         return *this;
     }
 
-    static constexpr T getMin() { return std::numeric_limits<T>::min(); }
+    static constexpr T getMin() { return (std::numeric_limits<T>::min)(); }
 
-    static constexpr T getMax() { return std::numeric_limits<T>::max(); }
+    static constexpr T getMax() { return (std::numeric_limits<T>::max)(); }
 
     ValueWrapper& operator=(const T& newValue)
     {

@@ -111,7 +111,7 @@ public:
     //has outgrown an int
     int size() const noexcept
     {
-        assert(container.size() <= (std::size_t) std::numeric_limits<int>::max());
+        assert(container.size() <= (std::size_t) (std::numeric_limits<int>::max)());
         return (int) container.size();
     }
 

@@ -167,7 +167,7 @@ struct StaticVector : VectorBase
     void resize(size_t numElements) { resize((int) numElements); }
     void resize(int numElements)
     {
-        numElements = std::min(MaxSize, numElements);
+        numElements = (std::min)(MaxSize, numElements);
 
         if (numElements < currentSize)
         {
@@ -216,7 +216,7 @@ struct StaticVector : VectorBase
     template <typename... Args>
     void resizeAndCreate(int numElements, Args&&... args)
     {
-        numElements = std::min(MaxSize, numElements);
+        numElements = (std::min)(MaxSize, numElements);
 
         if (numElements < currentSize)
         {
@@ -314,7 +314,7 @@ struct StaticVector : VectorBase
     int getLastElementIndex() const noexcept { return size() - 1; }
     int getLastValidElementIndex() const noexcept
     {
-        return std::max(0, getLastElementIndex());
+        return (std::max)(0, getLastElementIndex());
     }
 
     StaticVector& sort(bool forward = true)

@@ -122,7 +122,7 @@ public:
         if (free.empty())
         {
             auto space = DynamicMemory::getRequiredSpace(size, alignment);
-            free.create(std::max(space, poolObjectSize));
+            free.create((std::max)(space, poolObjectSize));
         }
 
         return allocateFromFreePool(size, alignment);
