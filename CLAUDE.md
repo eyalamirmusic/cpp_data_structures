@@ -52,3 +52,8 @@ Everything user-facing is re-exported from `ea_data_structures/ea_data_structure
 - **`Atomic<T>`** (in `Flags/`) static-asserts `T` is always lock-free; keep that guarantee intact.
 - **Formatting:** Allman braces, 4-space indent, 85-column limit, left-aligned pointers, `SortIncludes: false` (header order is intentional — notably in `ea_data_structures.h`), `Standard: c++20`.
 - **Braces on control flow:** `for` and `if` bodies use curly braces whenever the body spans more than one line (e.g. a nested `if`, a wrapped statement, or multiple statements). A body that fits on a single line may omit braces.
+
+## Commit authorship
+
+- Claude must never be the author, committer or co-author of a commit. Commits are attributed only to the human developer.
+- Never add a `Co-Authored-By: Claude` trailer, or any other Claude or Anthropic attribution (such as a "Generated with Claude Code" line), to a commit message.
