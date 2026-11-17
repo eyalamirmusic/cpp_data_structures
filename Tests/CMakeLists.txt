@@ -79,6 +79,12 @@ nano_add_executable(ea_data_structures_tests
 target_link_libraries(ea_data_structures_tests
     PRIVATE ea_data_structures AllocationsChecker)
 
+#Windows-only: includes <windows.h> without NOMINMAX before every public header,
+#so an unparenthesized std::max / numeric_limits<T>::max() fails the build.
+if(WIN32)
+    target_sources(ea_data_structures_tests PRIVATE Windows/WindowsMinMaxTests.cpp)
+endif()
+
 target_include_directories(ea_data_structures_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_compile_options(ea_data_structures_tests PRIVATE
